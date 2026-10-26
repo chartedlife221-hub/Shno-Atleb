@@ -45,3 +45,9 @@ export function focusAt(clip: Clip, t: number, aspect: number): string {
   const pos = visible >= 1 ? 0.5 : clamp((cx - visible / 2) / (1 - visible), 0, 1);
   return `${(pos * 100).toFixed(1)}% 45%`;
 }
+
+/** True when the visitor asked to save data or is on a very slow connection: show still frames, skip the videos. */
+export function lowData(): boolean {
+  const c = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+  return c?.saveData === true || c?.effectiveType === 'slow-2g' || c?.effectiveType === '2g';
+}

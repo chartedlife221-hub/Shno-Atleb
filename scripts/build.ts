@@ -21,11 +21,14 @@ const tr = (key: string): string => (ar as Record<string, string>)[key] ?? '';
 const attr = (name: string): RegExp => new RegExp(`\\s${name}=(?:"([^"]*)"|'([^']*)'|([^\\s>"']+))`);
 const attrValue = (m: RegExpExecArray | null): string | null => (m ? (m[1] ?? m[2] ?? m[3] ?? null) : null);
 
+let prerendered = 0;
 function prerender(html: string): string {
   // Text content: <tag ... data-i18n="key" ...>fallback</tag> (leaf elements only).
   let out = html.replace(/<([a-z0-9]+)([^>]*\sdata-i18n=[^>]*)>([^<]*)<\/\1>/g, (whole, tag: string, attrs: string) => {
     const key = attrValue(attr('data-i18n').exec(attrs));
-    return key && key in ar ? `<${tag}${attrs}>${escapeHtml(tr(key))}</${tag}>` : whole;
+    if (!key || !(key in ar)) return whole;
+    prerendered += 1;
+    return `<${tag}${attrs}>${escapeHtml(tr(key))}</${tag}>`;
   });
   // Attributes: data-i18n-placeholder and data-i18n-aria-label.
   out = out.replace(/<[a-z0-9]+\s[^>]*data-i18n-(?:placeholder|aria-label)=[^>]*>/g, (tag) => {
@@ -105,6 +108,7 @@ async function main(): Promise<void> {
   let html = prerender(readFileSync(file, 'utf8'));
   html = html.replace(/<meta charset="utf-8">/i, `<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp(endpoint)}"><link rel="manifest" href="./manifest.webmanifest">`);
   if (fontLinks.length) html = html.replace(/<\/head>/i, `${fontLinks.join('')}</head>`);
+  if (prerendered < 40) throw new Error(`Arabic prerender only filled ${prerendered} elements; the HTML would show English placeholders without JavaScript`);
   assertNoInlineCode(html);
   writeFileSync(file, html);
   writeFileSync(join(dist, '.nojekyll'), '');

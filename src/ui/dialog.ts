@@ -2,7 +2,7 @@ import { must } from '../lib/dom.ts';
 import { translate } from '../lib/i18n.ts';
 import { formatPrice, mapUrl, orderText } from '../lib/misc.ts';
 import type { Lang, MenuItem } from '../lib/types.ts';
-import { CLIPS, clamp, clipFor, focusAt, progressAt, sourceFor, type Clip } from './clips.ts';
+import { CLIPS, clamp, clipFor, focusAt, lowData, progressAt, sourceFor, type Clip } from './clips.ts';
 
 export interface OrderDialog {
   open(item: MenuItem, lang: Lang): void;
@@ -26,7 +26,7 @@ export function setupDialog(copy: (text: string) => void): OrderDialog {
   const shareBtn = must('#dlg-share', HTMLButtonElement);
   const videos: Record<Clip['id'], HTMLVideoElement> = { iced: must('#dv-iced', HTMLVideoElement), hot: must('#dv-hot', HTMLVideoElement) };
   const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
+  const saveData = lowData();
 
   let current: { item: MenuItem; lang: Lang } | null = null;
   let clip: Clip = CLIPS.hot;

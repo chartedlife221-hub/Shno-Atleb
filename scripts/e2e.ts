@@ -113,6 +113,11 @@ check('CSP meta is present', ((await page.locator('meta[http-equiv="Content-Secu
 check('no console errors or warnings', problems.length === 0, problems.join(' | '));
 check('external links use noopener noreferrer', await page.evaluate(() => [...document.querySelectorAll('a[target="_blank"]')].every((a) => (a.getAttribute('rel') ?? '').includes('noopener') && (a.getAttribute('rel') ?? '').includes('noreferrer'))));
 
+// the HTML must already be readable Arabic before any JavaScript runs
+const bare = await (await browser.newContext({ javaScriptEnabled: false })).newPage();
+await bare.goto(base);
+check('without JavaScript the page is already Arabic (no placeholders)', ((await bare.locator('#hero-title').textContent()) ?? '') === 'شنو أطلب؟' && !((await bare.locator('body').innerText()).includes('Sub')));
+
 await browser.close();
 server.stop();
 if (failures > 0) { console.error(`\n${failures} check(s) failed`); process.exit(1); }

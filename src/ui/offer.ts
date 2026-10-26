@@ -1,6 +1,6 @@
 import type { MenuItem } from '../lib/types.ts';
 
-import { CLIPS, clamp, clipFor, focusAt, sourceFor, type Clip } from './clips.ts';
+import { CLIPS, clamp, clipFor, focusAt, lowData, sourceFor, type Clip } from './clips.ts';
 
 export interface Offer {
   setItem(item: MenuItem): void;
@@ -22,7 +22,7 @@ const mid = (w: readonly [number, number]): number => (w[0] + w[1]) / 2;
  */
 export function createOffer(portal: HTMLElement, videos: Record<Clip['id'], HTMLVideoElement>, host: HTMLElement): Offer {
   const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
+  const saveData = lowData();
   let clip: Clip = CLIPS.hot;
   let mode: 'idle' | 'lean' | 'offer' = 'idle';
   let t = mid(clip.idle);
@@ -42,8 +42,9 @@ export function createOffer(portal: HTMLElement, videos: Record<Clip['id'], HTML
       loaded.add(id);
       v.poster = `./media/poster-${id}.jpg`;
       if (!saveData) {
-        v.src = sourceFor(id);
-        v.load();
+        const go = (): void => { v.src = sourceFor(id); v.load(); };
+        if (document.readyState === 'complete') go();
+        else window.addEventListener('load', go, { once: true });
       }
     }
     return v;
