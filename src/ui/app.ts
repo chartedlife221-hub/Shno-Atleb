@@ -6,6 +6,7 @@ import { copyText, formatPrice, orderText, safeGet, safeSet } from '../lib/misc.
 import { greetingForHour, moodForHour, pickNext, poolFor } from '../lib/pick.ts';
 import { AREAS, CATEGORIES, MOODS, type AreaId, type Lang, type MenuItem, type MoodChoice, type PriceBand } from '../lib/types.ts';
 import type { Key } from '../lib/dictionary.ts';
+import { createScene, type Scene } from '../gfx/scene.ts';
 import { ticket, type CardActions } from './card.ts';
 import { createCup } from './cup.ts';
 import { setupDialog } from './dialog.ts';
@@ -35,7 +36,24 @@ export function startApp(): void {
   const status = must('#status', HTMLElement);
   const stage = must('#stage', HTMLElement);
   const cup = createCup();
-  stage.appendChild(cup.el);
+  const glWrap = must('#gl-wrap', HTMLElement);
+  const scene: Scene | null = createScene(must('#gl', HTMLCanvasElement), glWrap);
+  const order = must('#order', HTMLElement);
+  if (scene) {
+    must('#cup-fallback', HTMLElement).hidden = true;
+    order.hidden = false;
+  } else {
+    glWrap.hidden = true;
+    must('#cup-fallback', HTMLElement).appendChild(cup.el);
+  }
+  const paintOrder = (item: MenuItem): void => {
+    must('#o-name', HTMLElement).textContent = item.name[state.lang];
+    must('#o-cafe', HTMLElement).textContent = `${item.cafe[state.lang]} · ${t(`area_${item.area}` as Key)}`;
+    must('#o-price', HTMLElement).textContent = formatPrice(item.priceKwd, state.lang);
+    order.classList.remove('is-new');
+    void order.offsetWidth;
+    order.classList.add('is-new');
+  };
 
   const say = (message: string): void => {
     status.textContent = '';
@@ -87,14 +105,32 @@ export function startApp(): void {
   function show(item: MenuItem | null, announce: boolean): void {
     state.current = item;
     if (!item) return;
-    cup.write(item, state.lang);
+    if (scene) {
+      scene.setDrink(item.layers);
+      scene.ripple(0.7);
+      paintOrder(item);
+    } else cup.write(item, state.lang);
     if (announce) say(t('pickAnnounce', { name: item.name[state.lang], cafe: item.cafe[state.lang], price: formatPrice(item.priceKwd, state.lang) }));
   }
   function shuffle(): void {
     show(pickNext(poolFor(ITEMS, state.mood), state.current?.id ?? null), true);
   }
   must('#shuffle-btn', HTMLButtonElement).addEventListener('click', shuffle);
-  must('#show-btn', HTMLButtonElement).addEventListener('click', () => state.current && actions.show(state.current));
+  const takeIt = (): void => {
+    const item = state.current;
+    if (!item) return;
+    if (!scene) return dialog.open(item, state.lang);
+    scene.offer(() => dialog.open(item, state.lang));
+  };
+  must('#show-btn', HTMLButtonElement).addEventListener('click', takeIt);
+  must('#cup-btn', HTMLButtonElement).addEventListener('click', takeIt);
+  must('#cup-btn', HTMLButtonElement).addEventListener('pointerdown', () => scene?.ripple(0.8));
+  must('#barista', HTMLDialogElement).addEventListener('close', () => scene?.release());
+  stage.addEventListener('pointermove', (e) => {
+    const r = glWrap.getBoundingClientRect();
+    scene?.look(((e.clientX - r.left) / r.width) * 2 - 1, ((e.clientY - r.top) / r.height) * 2 - 1);
+  });
+  stage.addEventListener('pointerleave', () => scene?.look(0, 0));
   must('#copy-btn', HTMLButtonElement).addEventListener('click', () => state.current && actions.copy(state.current));
 
   // ----- browse -----
@@ -192,7 +228,10 @@ export function startApp(): void {
     renderTop();
     renderMapNow();
     forms.relabel(state.lang);
-    if (state.current) cup.write(state.current, state.lang);
+    if (state.current) {
+      if (scene) paintOrder(state.current);
+      else cup.write(state.current, state.lang);
+    }
   };
   must('#lang-btn', HTMLButtonElement).addEventListener('click', () => {
     state.lang = state.lang === 'ar' ? 'en' : 'ar';

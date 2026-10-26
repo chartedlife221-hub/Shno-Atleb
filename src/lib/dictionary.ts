@@ -38,6 +38,9 @@ export const ar = {
   copied: 'اننسخ',
   copyFail: 'ما قدرنا ننسخ، انسخه يدوياً',
   cupAria: 'كوب ورقي مكتوب عليه الطلب المقترح',
+  takeIt: 'خذ طلبك',
+  cupHint: 'المس الكوب',
+  cupBtnAria: 'خذ الطلب من الباريستا',
   pickAnnounce: 'الطلب المقترح: {name} من {cafe}، {price}',
 
   // barista dialog
@@ -177,6 +180,9 @@ export const en: Record<Key, string> = {
   copied: 'Copied',
   copyFail: "Couldn't copy. Please copy it by hand",
   cupAria: 'A paper cup with the suggested order written on it',
+  takeIt: 'Take it',
+  cupHint: 'Touch the glass',
+  cupBtnAria: 'Take the order from the barista',
   pickAnnounce: 'Suggested order: {name} from {cafe}, {price}',
 
   sayIt: 'Say this to the barista',

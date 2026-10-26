@@ -52,8 +52,6 @@ function csp(endpoint: string): string {
 
 const FONTS: readonly { pkg: string; css: readonly string[] }[] = [
   { pkg: 'ibm-plex-sans-arabic', css: ['400.css', '500.css', '600.css', '700.css'] },
-  { pkg: 'lalezar', css: ['400.css'] },
-  { pkg: 'permanent-marker', css: ['400.css'] },
 ];
 
 /** Self-hosts fonts when @fontsource packages are installed; otherwise the CSS falls back to system fonts. */

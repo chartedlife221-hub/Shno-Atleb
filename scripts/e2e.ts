@@ -19,7 +19,8 @@ const check = (name: string, ok: boolean, detail = ''): void => {
   if (!ok) failures += 1;
 };
 
-const browser = await chromium.launch();
+const noGl = process.env['E2E_NOGL'] === '1';
+const browser = await chromium.launch({ args: noGl ? ['--disable-gpu', '--disable-webgl', '--disable-3d-apis'] : ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
 const page = await ctx.newPage();
 const problems: string[] = [];
@@ -35,21 +36,25 @@ await page.waitForSelector('body.is-ready');
 check('page is Arabic and RTL by default', (await page.getAttribute('html', 'dir')) === 'rtl' && (await page.getAttribute('html', 'lang')) === 'ar');
 check('renders every item card', (await page.locator('#grid > li').count()) === 25);
 check('renders a Top 10 rail', (await page.locator('#top-list > li').count()) === 10);
-check('cup shows an order', ((await page.locator('.cup__name').textContent()) ?? '').length > 2);
+const glOk = await page.locator('#gl-wrap').isVisible();
+console.log(`INFO  3D scene ${glOk ? 'active' : 'unavailable, using 2D fallback'}`);
+check(noGl ? 'falls back to 2D cup without WebGL' : '3D scene is active', glOk !== noGl);
+check('an order is shown', (((await (glOk ? page.locator('#o-name') : page.locator('.cup__name')).textContent()) ?? '').length > 2));
 
 // mood + shuffle never repeats
 const names = new Set<string>();
 for (let i = 0; i < 4; i += 1) {
   await page.click('#shuffle-btn');
   await page.waitForTimeout(60);
-  names.add((await page.getAttribute('.cup', 'aria-label')) ?? '');
+  names.add(glOk ? ((await page.locator('#o-name').textContent()) ?? '') : ((await page.getAttribute('.cup', 'aria-label')) ?? ''));
 }
 check('shuffle changes the pick', names.size >= 3, [...names].join(' | '));
 await page.click('#moods button >> nth=2');
 check('mood chip is pressed', (await page.locator('#moods button[aria-pressed="true"]').count()) === 1);
 
 // dialog
-await page.click('#show-btn');
+await page.click(glOk ? '#cup-btn' : '#show-btn');
+await page.waitForFunction(() => (document.getElementById('barista') as HTMLDialogElement).open, null, { timeout: 8000 }).catch(() => undefined);
 check('barista dialog opens', await page.locator('#barista').evaluate((d: HTMLDialogElement) => d.open));
 await page.keyboard.press('Escape');
 check('Esc closes the dialog', !(await page.locator('#barista').evaluate((d: HTMLDialogElement) => d.open)));
