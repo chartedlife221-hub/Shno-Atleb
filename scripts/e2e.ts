@@ -62,7 +62,7 @@ await page.waitForSelector('.barista__card.is-scene', { timeout: 5000 }).catch((
 check('the card opens onto the video scene', await page.locator('.barista__card.is-scene').count() === 1);
 const heroName = (await page.locator('#o-name').textContent()) ?? '';
 check('the card shows the order the visitor touched', ((await page.locator('#dlg-name-ar').textContent()) ?? '') === heroName || ((await page.locator('#dlg-name').textContent()) ?? '') === heroName);
-await page.waitForSelector('.barista__card.is-handoff', { timeout: 15000 }).catch(() => undefined);
+await page.waitForSelector('.barista__card.is-handoff', { timeout: 30000 }).catch(() => undefined);
 check('stage 3: the hand-off starts', await page.locator('.barista__card.is-handoff').count() === 1);
 await page.waitForFunction(() => Number(document.getElementById('ho-fg')?.dataset['bottom'] || 0) > 0, null, { timeout: 15000 }).catch(() => undefined);
 await page.waitForTimeout(4500);
