@@ -89,13 +89,14 @@
         <p class="status" id="status" role="status" aria-live="polite"></p>
       </div>
       <div class="hero__stage" id="stage">
-        <div class="gl" id="gl-wrap">
-          <canvas id="gl" aria-hidden="true"></canvas>
-          <button type="button" class="gl__touch" id="cup-btn" data-i18n-aria-label="cupBtnAria" aria-label="Take"></button>
-          <p class="gl__hint glass" id="gl-hint" aria-hidden="true"><span data-i18n="cupHint">Touch</span></p>
+        <div class="portal" id="portal">
+          <video id="v-iced" class="portal__video" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true" tabindex="-1"></video>
+          <video id="v-hot" class="portal__video" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true" tabindex="-1"></video>
+          <div class="portal__grade" aria-hidden="true"></div>
+          <button type="button" class="portal__touch" id="cup-btn" data-i18n-aria-label="cupBtnAria" aria-label="Take"></button>
         </div>
-        <div id="cup-fallback"></div>
-        <div class="order glass" id="order" hidden>
+        <p class="stage__hint glass" id="gl-hint" aria-hidden="true"><span data-i18n="cupHint">Touch</span></p>
+        <div class="order glass" id="order">
           <p class="order__name" id="o-name"></p>
           <p class="order__cafe" id="o-cafe"></p>
           <p class="order__price" id="o-price" dir="ltr"></p>

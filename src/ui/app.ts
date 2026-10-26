@@ -6,9 +6,8 @@ import { copyText, formatPrice, orderText, safeGet, safeSet } from '../lib/misc.
 import { greetingForHour, moodForHour, pickNext, poolFor } from '../lib/pick.ts';
 import { AREAS, CATEGORIES, MOODS, type AreaId, type Lang, type MenuItem, type MoodChoice, type PriceBand } from '../lib/types.ts';
 import type { Key } from '../lib/dictionary.ts';
-import { createScene, type Scene } from '../gfx/scene.ts';
 import { ticket, type CardActions } from './card.ts';
-import { createCup } from './cup.ts';
+import { createOffer } from './offer.ts';
 import { setupDialog } from './dialog.ts';
 import { setupForms } from './forms.ts';
 import { applyI18n } from './i18n-dom.ts';
@@ -35,17 +34,9 @@ export function startApp(): void {
 
   const status = must('#status', HTMLElement);
   const stage = must('#stage', HTMLElement);
-  const cup = createCup();
-  const glWrap = must('#gl-wrap', HTMLElement);
-  const scene: Scene | null = createScene(must('#gl', HTMLCanvasElement), glWrap);
+  const portal = must('#portal', HTMLElement);
+  const offerStage = createOffer(portal, { iced: must('#v-iced', HTMLVideoElement), hot: must('#v-hot', HTMLVideoElement) }, stage);
   const order = must('#order', HTMLElement);
-  if (scene) {
-    must('#cup-fallback', HTMLElement).hidden = true;
-    order.hidden = false;
-  } else {
-    glWrap.hidden = true;
-    must('#cup-fallback', HTMLElement).appendChild(cup.el);
-  }
   const paintOrder = (item: MenuItem): void => {
     must('#o-name', HTMLElement).textContent = item.name[state.lang];
     must('#o-cafe', HTMLElement).textContent = `${item.cafe[state.lang]} · ${t(`area_${item.area}` as Key)}`;
@@ -105,11 +96,8 @@ export function startApp(): void {
   function show(item: MenuItem | null, announce: boolean): void {
     state.current = item;
     if (!item) return;
-    if (scene) {
-      scene.setDrink(item.layers);
-      scene.ripple(0.7);
-      paintOrder(item);
-    } else cup.write(item, state.lang);
+    offerStage.setItem(item);
+    paintOrder(item);
     if (announce) say(t('pickAnnounce', { name: item.name[state.lang], cafe: item.cafe[state.lang], price: formatPrice(item.priceKwd, state.lang) }));
   }
   function shuffle(): void {
@@ -119,18 +107,20 @@ export function startApp(): void {
   const takeIt = (): void => {
     const item = state.current;
     if (!item) return;
-    if (!scene) return dialog.open(item, state.lang);
-    scene.offer(() => dialog.open(item, state.lang));
+    offerStage.offer(() => dialog.open(item, state.lang));
   };
   must('#show-btn', HTMLButtonElement).addEventListener('click', takeIt);
   must('#cup-btn', HTMLButtonElement).addEventListener('click', takeIt);
-  must('#cup-btn', HTMLButtonElement).addEventListener('pointerdown', () => scene?.ripple(0.8));
-  must('#barista', HTMLDialogElement).addEventListener('close', () => scene?.release());
+  must('#barista', HTMLDialogElement).addEventListener('close', () => offerStage.release());
   stage.addEventListener('pointermove', (e) => {
-    const r = glWrap.getBoundingClientRect();
-    scene?.look(((e.clientX - r.left) / r.width) * 2 - 1, ((e.clientY - r.top) / r.height) * 2 - 1);
+    const r = portal.getBoundingClientRect();
+    offerStage.look(((e.clientX - r.left) / r.width) * 2 - 1, ((e.clientY - r.top) / r.height) * 2 - 1);
   });
-  stage.addEventListener('pointerleave', () => scene?.look(0, 0));
+  stage.addEventListener('pointerleave', () => { offerStage.look(0, 0); offerStage.lean(false); });
+  const coarse = window.matchMedia('(pointer: coarse)');
+  must('#cup-btn', HTMLButtonElement).addEventListener('pointerenter', () => { if (!coarse.matches) offerStage.lean(true); });
+  must('#cup-btn', HTMLButtonElement).addEventListener('focus', () => offerStage.lean(true));
+  must('#cup-btn', HTMLButtonElement).addEventListener('blur', () => offerStage.lean(false));
   must('#copy-btn', HTMLButtonElement).addEventListener('click', () => state.current && actions.copy(state.current));
 
   // ----- browse -----
@@ -229,8 +219,7 @@ export function startApp(): void {
     renderMapNow();
     forms.relabel(state.lang);
     if (state.current) {
-      if (scene) paintOrder(state.current);
-      else cup.write(state.current, state.lang);
+      paintOrder(state.current);
     }
   };
   must('#lang-btn', HTMLButtonElement).addEventListener('click', () => {
