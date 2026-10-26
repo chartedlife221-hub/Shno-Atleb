@@ -17,9 +17,46 @@ export const CLIPS: Record<Clip['id'], Clip> = {
   hot: { id: 'hot', idle: [7.65, 8.05], peak: [11.2, 12.4], cupX: [0.84, 0.41] },
 };
 
-/** The iced clip has "Ice Vanilla Americano" printed on its cup, so only that order may use it. */
-export function clipFor(item: MenuItem): Clip {
-  return item.id === 'iced-vanilla-americano' ? CLIPS.iced : CLIPS.hot;
+/**
+ * Real footage exists for two serving styles only, and we never show a different drink as the order:
+ * - the iced clip has "Ice Vanilla Americano" printed on its clear cup, so only that order uses it;
+ * - the white lidded takeaway cup is how every hot drink is served, so hot drinks use it.
+ * Iced lattes, frappés, matcha and desserts have no footage yet and return null.
+ */
+export function clipFor(item: MenuItem): Clip | null {
+  if (item.id === 'iced-vanilla-americano') return CLIPS.iced;
+  const hot = item.category !== 'cake_dessert' && item.moods.includes('warm') && !/iced|frapp/i.test(item.name.en);
+  return hot ? CLIPS.hot : null;
+}
+
+/**
+ * Cut-out hand-off clips: one video holding three stacked panes (colour, alpha matte, background with
+ * the hand and cup removed), all at the clip's native size. Times are seconds into these clips.
+ */
+export interface Handoff {
+  readonly id: Clip['id'];
+  readonly w: number;
+  readonly h: number;
+  readonly pad: number;
+  /** When the hand has brought the cup right up to the screen, and the window it then breathes in. */
+  readonly peak: readonly [number, number];
+  /** Where the cup is horizontally (0..1) at the start and at the peak. */
+  readonly cupX: readonly [number, number];
+  /** The point the cut-out grows from as it comes toward the viewer (0..1 of the frame). */
+  readonly anchor: readonly [number, number];
+  /** Top of the hand-and-cup at the start and at the peak (0..1 of the frame), to keep the order text clear. */
+  readonly top: readonly [number, number];
+}
+
+export const HANDOFFS: Record<Clip['id'], Handoff> = {
+  hot: { id: 'hot', w: 638, h: 342, pad: 8, peak: [4.3, 5.75], cupX: [0.84, 0.41], anchor: [0.62, 0.18], top: [0.3, 0.12] },
+  iced: { id: 'iced', w: 678, h: 360, pad: 8, peak: [4.45, 7.2], cupX: [0.5, 0.48], anchor: [0.5, 0.2], top: [0.22, 0.02] },
+};
+
+export function handoffSource(id: Clip['id']): string {
+  const probe = document.createElement('video');
+  const mp4 = probe.canPlayType('video/mp4; codecs="avc1.42E01E"') !== '';
+  return `./media/handoff-${id}.${mp4 ? 'mp4' : 'webm'}`;
 }
 
 export function sourceFor(id: Clip['id']): string {

@@ -4,7 +4,9 @@ Kuwait's exact coffee and dessert order, written on your cup. Arabic first, Engl
 
 **Concept:** a frosted-glass café where you are *offered* a cup. Pick a mood; a real video of a barista's hand holds a cup inside a glass "portal". Hover and the cup leans toward you; touch it and the hand brings the cup right up to the screen (the frame lifts toward you in 3D), then a full-screen card shows the exact order to say at the counter. Plus a Top 10, searchable list, area map and forms to suggest or correct orders.
 
-**How the hand works:** two real clips (`public/media`, mp4 + webm, re-encoded with short keyframe spacing) are *steered*, not simply played: the playhead moves forward at natural speed toward the "close" pose and back a little faster, so the motion stays real and reversible. Idle/peak times per clip live in `src/ui/offer.ts`. The iced Americano clip shows for the Iced Vanilla Americano pick (its cup is printed); the blank white cup shows for every other pick. Reduced motion or data-saver show still frames only.
+**The order hand-off (three stages):** touching the cup grows the order card out of it (stage 1: exact name, café, price in Arabic and English). The card then opens onto the café (stage 2: a background layer clipped by the card). Then a real hand brings that drink forward *out of* the card (stage 3): the hand and cup are a separate cut-out layer, drawn by WebGL above the card with extra perspective scale and a soft shadow, so they cross the card's edges while the background stays behind. The cut-outs were made from the real clips with segmentation models (see `tools/handoff/`).
+
+**Matching drinks only:** the iced clip (its cup is printed "Ice Vanilla Americano") is used only for that order; the plain white takeaway cup is used only for hot drinks. Iced lattes, matcha, frappés and desserts have no footage yet, so they show the empty café counter and a note, never a different cup (unit-tested in `tests/unit/clips.test.ts`). Reduced motion, data saver or no WebGL show the same composition as still images.
 
 ## Run
 

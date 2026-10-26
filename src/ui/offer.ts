@@ -20,10 +20,12 @@ const mid = (w: readonly [number, number]): number => (w[0] + w[1]) / 2;
  * the playhead is steered (forward at natural speed, back a little faster) between an
  * "idle" pose and a "close to you" pose, while the whole frame leans toward the viewer in 3D.
  */
-export function createOffer(portal: HTMLElement, videos: Record<Clip['id'], HTMLVideoElement>, host: HTMLElement): Offer {
+export function createOffer(portal: HTMLElement, videos: Record<Clip['id'], HTMLVideoElement>, host: HTMLElement, plate: HTMLImageElement): Offer {
   const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
   const saveData = lowData();
   let clip: Clip = CLIPS.hot;
+  /** No footage for this drink: show the empty café counter, never a different cup. */
+  let empty = false;
   let mode: 'idle' | 'lean' | 'offer' = 'idle';
   let t = mid(clip.idle);
   let dir = 1;
@@ -50,8 +52,10 @@ export function createOffer(portal: HTMLElement, videos: Record<Clip['id'], HTML
     return v;
   };
 
-  const show = (id: Clip['id']): void => {
+  const show = (id: Clip['id'] | null): void => {
     for (const key of Object.keys(videos) as Clip['id'][]) videos[key].classList.toggle('is-on', key === id);
+    if (id === null && !plate.src) plate.src = './media/cafe.jpg';
+    plate.classList.toggle('is-on', id === null);
   };
 
   const seek = (): void => {
@@ -99,7 +103,7 @@ export function createOffer(portal: HTMLElement, videos: Record<Clip['id'], HTML
       if (t < a) { t = a; dir = 1; }
     }
     t = clamp(t, 0, 17);
-    seek();
+    if (!empty) seek();
     if (mode === 'offer' && !arrived && t >= clip.peak[0] - 0.05) {
       arrived = true;
       const cb = done;
@@ -145,7 +149,13 @@ export function createOffer(portal: HTMLElement, videos: Record<Clip['id'], HTML
   return {
     setItem(item) {
       const next = clipFor(item);
-      if (next.id === clip.id) return;
+      if (!next) {
+        empty = true;
+        show(null);
+        return;
+      }
+      if (!empty && next.id === clip.id) return;
+      empty = false;
       clip = next;
       t = mid(clip.idle);
       arrived = false;

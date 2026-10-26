@@ -35,7 +35,7 @@ export function startApp(): void {
   const status = must('#status', HTMLElement);
   const stage = must('#stage', HTMLElement);
   const portal = must('#portal', HTMLElement);
-  const offerStage = createOffer(portal, { iced: must('#v-iced', HTMLVideoElement), hot: must('#v-hot', HTMLVideoElement) }, stage);
+  const offerStage = createOffer(portal, { iced: must('#v-iced', HTMLVideoElement), hot: must('#v-hot', HTMLVideoElement) }, stage, must('#hero-plate', HTMLImageElement));
   const order = must('#order', HTMLElement);
   const paintOrder = (item: MenuItem): void => {
     must('#o-name', HTMLElement).textContent = item.name[state.lang];
@@ -98,6 +98,8 @@ export function startApp(): void {
     if (!item) return;
     offerStage.setItem(item);
     paintOrder(item);
+    if (document.readyState === 'complete') dialog.handoff.preload(item);
+    else window.addEventListener('load', () => dialog.handoff.preload(item), { once: true });
     if (announce) say(t('pickAnnounce', { name: item.name[state.lang], cafe: item.cafe[state.lang], price: formatPrice(item.priceKwd, state.lang) }));
   }
   function shuffle(): void {
@@ -107,7 +109,8 @@ export function startApp(): void {
   const takeIt = (): void => {
     const item = state.current;
     if (!item) return;
-    dialog.open(item, state.lang);
+    offerStage.lean(true);
+    dialog.open(item, state.lang, portal.getBoundingClientRect());
   };
   must('#show-btn', HTMLButtonElement).addEventListener('click', takeIt);
   must('#cup-btn', HTMLButtonElement).addEventListener('click', takeIt);
@@ -229,7 +232,10 @@ export function startApp(): void {
   });
 
   renderAll();
-  show(pickNext(poolFor(ITEMS, state.mood), null), false);
+  // first impression: a drink we have real hand-off footage for
+  const pool = poolFor(ITEMS, state.mood);
+  const filmed = pool.filter((it) => dialog.handoff.has(it));
+  show(pickNext(filmed.length ? filmed : pool, null), false);
   observeReveal(document);
   scrollSpy();
   document.body.classList.add('is-ready');

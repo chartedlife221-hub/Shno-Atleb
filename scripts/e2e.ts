@@ -20,10 +20,10 @@ const check = (name: string, ok: boolean, detail = ''): void => {
 };
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
+const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
 const page = await ctx.newPage();
 const problems: string[] = [];
-page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') problems.push(m.text()); });
+page.on('console', (m) => { if ((m.type() === 'error' || m.type() === 'warning') && !m.text().includes('GL Driver Message')) problems.push(m.text()); });
 page.on('pageerror', (e) => problems.push(e.message));
 await page.addInitScript(() => {
   (window as unknown as { __csp: string[] }).__csp = [];
@@ -60,16 +60,33 @@ await page.waitForFunction(() => (document.getElementById('barista') as HTMLDial
 check('barista dialog opens', await page.locator('#barista').evaluate((d: HTMLDialogElement) => d.open));
 await page.waitForSelector('.barista__card.is-scene', { timeout: 5000 }).catch(() => undefined);
 check('the card opens onto the video scene', await page.locator('.barista__card.is-scene').count() === 1);
+const heroName = (await page.locator('#o-name').textContent()) ?? '';
+check('the card shows the order the visitor touched', ((await page.locator('#dlg-name-ar').textContent()) ?? '') === heroName || ((await page.locator('#dlg-name').textContent()) ?? '') === heroName);
+await page.waitForSelector('.barista__card.is-handoff', { timeout: 15000 }).catch(() => undefined);
+check('stage 3: the hand-off starts', await page.locator('.barista__card.is-handoff').count() === 1);
+await page.waitForFunction(() => Number(document.getElementById('ho-fg')?.dataset['bottom'] || 0) > 0, null, { timeout: 15000 }).catch(() => undefined);
+await page.waitForTimeout(4500);
+const breakout = await page.evaluate(() => {
+  const card = document.querySelector('.barista__card')!.getBoundingClientRect();
+  return Number(document.getElementById('ho-fg')!.dataset['bottom'] || 0) - card.bottom;
+});
+check('the hand and drink cross the card edge toward the viewer', breakout > 20, `${breakout}px`);
 await page.keyboard.press('Escape');
 check('Esc closes the dialog', !(await page.locator('#barista').evaluate((d: HTMLDialogElement) => d.open)));
 
+// a drink with no footage never shows a different cup
+await page.locator('#grid li[data-id="iced-matcha-latte"] .tbtn--main').click();
+await page.waitForTimeout(1500);
+check('no footage: honest note, no hand-off', (await page.locator('#dlg-note').isVisible()) && (await page.locator('.barista__card.is-handoff').count()) === 0);
+await page.keyboard.press('Escape');
+
 // search incl. Arabic spelling variants
 await page.fill('#f-query', 'امريكانو');
-await page.waitForTimeout(250);
+await page.waitForFunction(() => document.querySelectorAll('#grid > li').length < 25, null, { timeout: 5000 }).catch(() => undefined);
 const n = await page.locator('#grid > li').count();
 check('Arabic search forgives alef spelling', n > 0 && n < 25, String(n));
 await page.fill('#f-query', 'zzzzqq');
-await page.waitForTimeout(250);
+await page.waitForFunction(() => document.querySelectorAll('#grid > li').length === 0, null, { timeout: 5000 }).catch(() => undefined);
 check('empty state shows', await page.locator('#empty').isVisible());
 await page.click('#f-clear');
 check('clear restores all', (await page.locator('#grid > li').count()) === 25);
