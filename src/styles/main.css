@@ -254,20 +254,44 @@ main:focus { outline: none; }
 /* ===== footer ===== */
 .foot { max-width: 1180px; margin-inline: auto; padding: 2rem clamp(1rem, 4vw, 2.5rem) 3rem; color: var(--muted); display: grid; gap: .5rem; font-size: .92rem; }
 
-/* ===== barista card (native dialog) ===== */
-.barista { border: 0; padding: 0; background: transparent; color: var(--ink); width: min(44rem, 100%); max-width: 100%; max-height: 100dvh; margin: auto; }
-.barista::backdrop { background: rgba(15, 25, 20, .55); backdrop-filter: blur(10px) saturate(1.2); }
-.barista__card { position: relative; border-radius: 34px; padding: clamp(1.5rem, 6vw, 3.2rem); margin: 1rem; text-align: center; display: grid; gap: .8rem; justify-items: center;
-  background: linear-gradient(145deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .45)); color: #1f2a24; backdrop-filter: blur(30px) saturate(1.5); border: 1px solid rgba(255, 255, 255, .9); box-shadow: 0 1px 0 #fff inset, 0 30px 60px -30px rgba(10, 25, 18, .6); }
-.barista__close { position: absolute; inset-block-start: .8rem; inset-inline-end: .8rem; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .9); background: rgba(255, 255, 255, .6); color: #1f2a24; cursor: pointer; }
-.barista__say { font-weight: 500; color: #4c5a52; letter-spacing: .04em; }
-.barista__name { font-size: clamp(2rem, 8vw, 3.8rem); font-weight: 600; line-height: 1.12; text-wrap: balance; overflow-wrap: anywhere; }
-.barista__name--ar { font-size: clamp(1.8rem, 7vw, 3.2rem); color: #3f6552; }
-.barista__cafe { font-weight: 500; font-size: 1.2rem; }
-.barista__price { font-size: 1.6rem; font-weight: 600; color: #b4583c; }
-.barista__actions { display: flex; gap: .7rem; flex-wrap: wrap; justify-content: center; margin-block-start: .5rem; }
+/* ===== barista card: a gateway to a real scene ===== */
+.barista { border: 0; padding: 0; background: transparent; color: var(--ink); width: min(34rem, 100%); max-width: 100%; max-height: 100dvh; margin: auto; overflow: visible; transition: width .9s cubic-bezier(.2, .8, .2, 1); }
+.barista:has(.is-scene) { width: min(60rem, 100%); }
+.barista::backdrop { background: rgba(15, 25, 20, .55); backdrop-filter: blur(10px) saturate(1.2); transition: background .9s; }
+.barista:has(.is-scene)::backdrop { background: rgba(12, 8, 4, .78); }
+.barista__card { --push: 0; position: relative; isolation: isolate; overflow: hidden; display: grid; grid-template-rows: auto 1fr auto; justify-items: center; gap: .8rem; text-align: center;
+  min-height: 0; margin: 1rem; padding: clamp(1.4rem, 5vw, 2.6rem); border-radius: 34px; color: #1f2a24; border: 1px solid rgba(255, 255, 255, .9);
+  box-shadow: 0 1px 0 #fff inset, 0 30px 60px -30px rgba(10, 25, 18, .6); transition: min-height .9s cubic-bezier(.2, .8, .2, 1), color .6s, box-shadow .9s;
+  transform: perspective(1400px) rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)); }
+.barista__card::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: linear-gradient(145deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .45)); backdrop-filter: blur(30px) saturate(1.5); -webkit-backdrop-filter: blur(30px) saturate(1.5); transition: opacity .9s; }
+.barista__card.is-scene { min-height: min(78dvh, 40rem); color: #fff; box-shadow: 0 1px 0 rgba(255, 255, 255, .4) inset, 0 50px 100px -30px rgba(0, 0, 0, .85); }
+.barista__card.is-scene::before { opacity: 0; }
+.barista__scene { position: absolute; inset: 0; z-index: -2; border-radius: inherit; overflow: hidden; background: #2a1c14; opacity: 0; transition: opacity 1s ease .1s; }
+.is-scene .barista__scene { opacity: 1; }
+.barista__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; filter: blur(22px) saturate(1.2); transform: scale(1.3); transition: filter 1.6s cubic-bezier(.2, .8, .2, 1), transform 1.6s cubic-bezier(.2, .8, .2, 1), opacity .6s; }
+.barista__video.is-on { opacity: 1; }
+.is-scene .barista__video { filter: blur(0) saturate(1.05); transform: scale(calc(1 + var(--push) * .1)); transition: filter 1.6s cubic-bezier(.2, .8, .2, 1), transform .25s linear, opacity .6s; }
+.barista__scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 6, 2, .72), rgba(10, 6, 2, .15) 38%, transparent 55%, rgba(10, 6, 2, .65)); box-shadow: inset 0 0 120px rgba(10, 5, 0, .5); }
+.barista__close { position: absolute; z-index: 2; inset-block-start: .8rem; inset-inline-end: .8rem; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .9); background: rgba(255, 255, 255, .6); color: #1f2a24; cursor: pointer; }
+.barista__text { display: grid; gap: .5rem; justify-items: center; }
+.barista__say { font-weight: 500; opacity: .75; letter-spacing: .04em; }
+.barista__name { font-size: clamp(2rem, 8vw, 3.6rem); font-weight: 600; line-height: 1.12; text-wrap: balance; overflow-wrap: anywhere; transition: font-size .9s cubic-bezier(.2, .8, .2, 1); }
+.barista__name--ar { font-size: clamp(1.8rem, 7vw, 3rem); color: #3f6552; transition: font-size .9s cubic-bezier(.2, .8, .2, 1), color .6s; }
+.barista__cafe { font-weight: 500; font-size: 1.15rem; }
+.is-scene .barista__cafe { font-size: .95rem; }
+.is-scene .barista__price { font-size: 1.1rem; }
+.barista__price { font-size: 1.5rem; font-weight: 600; color: #b4583c; transition: color .6s; }
+.is-scene .barista__text { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: .1rem 1rem; padding-inline: 3rem; }
+.is-scene .barista__say { display: none; }
+.is-scene .barista__name { font-size: clamp(1.25rem, 3.6vw, 1.7rem); text-shadow: 0 2px 18px rgba(0, 0, 0, .55); }
+.is-scene .barista__name--ar { font-size: clamp(1.15rem, 3.2vw, 1.5rem); color: #cfe8d7; }
+.is-scene .barista__price { color: #ffcf8a; }
+.is-scene .barista__say, .is-scene .barista__cafe { text-shadow: 0 2px 14px rgba(0, 0, 0, .55); }
+.barista__actions { display: flex; gap: .7rem; flex-wrap: wrap; justify-content: center; align-self: end; margin-block-start: .3rem; }
 .barista .btn--ghost { color: #1f2a24; }
-.barista[open] .barista__card { animation: pop .5s cubic-bezier(.2, 1.2, .3, 1); }
+.barista__card.is-scene .btn--ghost { color: #fff; border-color: rgba(255, 255, 255, .5); background: rgba(255, 255, 255, .12); }
+.barista[open] .barista__card { animation: pop .55s cubic-bezier(.2, 1.2, .3, 1); }
+@media (max-width: 700px) { .barista__card { margin: .5rem; border-radius: 28px; } .barista__card.is-scene { min-height: min(82dvh, 36rem); } }
 
 /* ===== motion ===== */
 .is-ready [data-reveal]:not(.is-in) { opacity: 0; translate: 0 22px; }

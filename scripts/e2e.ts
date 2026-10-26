@@ -58,6 +58,8 @@ check('mood chip is pressed', (await page.locator('#moods button[aria-pressed="t
 await page.click('#cup-btn');
 await page.waitForFunction(() => (document.getElementById('barista') as HTMLDialogElement).open, null, { timeout: 15000 }).catch(() => undefined);
 check('barista dialog opens', await page.locator('#barista').evaluate((d: HTMLDialogElement) => d.open));
+await page.waitForSelector('.barista__card.is-scene', { timeout: 5000 }).catch(() => undefined);
+check('the card opens onto the video scene', await page.locator('.barista__card.is-scene').count() === 1);
 await page.keyboard.press('Escape');
 check('Esc closes the dialog', !(await page.locator('#barista').evaluate((d: HTMLDialogElement) => d.open)));
 

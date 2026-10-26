@@ -1,19 +1,6 @@
 import type { MenuItem } from '../lib/types.ts';
 
-/** The two real clips. Times are seconds into each clip (see docs/hero-video.md). */
-interface Clip {
-  readonly id: 'iced' | 'hot';
-  /** Hand holds the cup far away, barely moving. */
-  readonly idle: readonly [number, number];
-  /** Hand has brought the cup right up to the screen. */
-  readonly peak: readonly [number, number];
-  /** Horizontal object-position (%) at idle and at peak, so the moving cup stays in frame when cropped. */
-  readonly focusX: readonly [number, number];
-}
-const CLIPS: Record<Clip['id'], Clip> = {
-  iced: { id: 'iced', idle: [0.1, 3.2], peak: [7.4, 10.2], focusX: [50, 50] },
-  hot: { id: 'hot', idle: [7.65, 8.05], peak: [11.2, 12.4], focusX: [100, 0] },
-};
+import { CLIPS, clamp, clipFor, focusAt, sourceFor, type Clip } from './clips.ts';
 
 export interface Offer {
   setItem(item: MenuItem): void;
@@ -26,14 +13,7 @@ export interface Offer {
   release(): void;
 }
 
-const clamp = (v: number, a: number, b: number): number => Math.min(b, Math.max(a, v));
 const mid = (w: readonly [number, number]): number => (w[0] + w[1]) / 2;
-
-function sourceFor(id: Clip['id']): string {
-  const probe = document.createElement('video');
-  const mp4 = probe.canPlayType('video/mp4; codecs="avc1.42E01E"') !== '';
-  return `./media/offer-${id}.${mp4 ? 'mp4' : 'webm'}`;
-}
 
 /**
  * Drives a real video of a barista's hand offering a cup, like a physical object:
@@ -125,8 +105,7 @@ export function createOffer(portal: HTMLElement, videos: Record<Clip['id'], HTML
       done = null;
       window.setTimeout(() => cb?.(), 350);
     }
-    const prog = clamp((t - clip.idle[1]) / (clip.peak[0] - clip.idle[1]), 0, 1);
-    portal.style.setProperty('--focus', `${(clip.focusX[0] + (clip.focusX[1] - clip.focusX[0]) * prog).toFixed(1)}% 45%`);
+    portal.style.setProperty('--focus', focusAt(clip, t, portal.clientWidth / Math.max(1, portal.clientHeight)));
     applyPose(dt);
   };
 
@@ -164,7 +143,7 @@ export function createOffer(portal: HTMLElement, videos: Record<Clip['id'], HTML
 
   return {
     setItem(item) {
-      const next = item.id === 'iced-vanilla-americano' ? CLIPS.iced : CLIPS.hot;
+      const next = clipFor(item);
       if (next.id === clip.id) return;
       clip = next;
       t = mid(clip.idle);

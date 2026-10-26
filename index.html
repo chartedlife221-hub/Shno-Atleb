@@ -189,12 +189,19 @@
 
   <dialog class="barista" id="barista" aria-labelledby="dlg-name">
     <div class="barista__card">
+      <div class="barista__scene" aria-hidden="true">
+        <video id="dv-iced" class="barista__video" muted playsinline preload="none" disablepictureinpicture tabindex="-1"></video>
+        <video id="dv-hot" class="barista__video" muted playsinline preload="none" disablepictureinpicture tabindex="-1"></video>
+        <div class="barista__scrim"></div>
+      </div>
       <button type="button" class="barista__close" id="dlg-close" data-i18n-aria-label="dlgClose" aria-label="Close"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
-      <p class="barista__say" data-i18n="sayIt">Say</p>
-      <p class="barista__name" id="dlg-name" lang="en" dir="ltr"></p>
-      <p class="barista__name barista__name--ar" id="dlg-name-ar" lang="ar" dir="rtl"></p>
-      <p class="barista__cafe" id="dlg-cafe"></p>
-      <p class="barista__price" id="dlg-price"></p>
+      <div class="barista__text">
+        <p class="barista__say" data-i18n="sayIt">Say</p>
+        <p class="barista__name" id="dlg-name" lang="en" dir="ltr"></p>
+        <p class="barista__name barista__name--ar" id="dlg-name-ar" lang="ar" dir="rtl"></p>
+        <p class="barista__cafe" id="dlg-cafe"></p>
+        <p class="barista__price" id="dlg-price"></p>
+      </div>
       <div class="barista__actions">
         <button type="button" class="btn btn--sun" id="dlg-copy" data-i18n="dlgCopy">Copy</button>
         <button type="button" class="btn btn--ink" id="dlg-share" data-i18n="dlgShare" hidden>Share</button>

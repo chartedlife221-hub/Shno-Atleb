@@ -107,7 +107,7 @@ export function startApp(): void {
   const takeIt = (): void => {
     const item = state.current;
     if (!item) return;
-    offerStage.offer(() => dialog.open(item, state.lang));
+    dialog.open(item, state.lang);
   };
   must('#show-btn', HTMLButtonElement).addEventListener('click', takeIt);
   must('#cup-btn', HTMLButtonElement).addEventListener('click', takeIt);
