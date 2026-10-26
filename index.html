@@ -1,187 +1,192 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#A5A25B">
-<title>شنو أطلب؟ — Shno Atleb</title>
-<meta name="description" content="Kuwait's best-selling coffee orders, in one place. The exact order to get in Kuwait.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lalezar&family=Noto+Kufi+Arabic:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>شنو أطلب؟ · Shno Atleb</title>
+  <meta name="description" content="الطلب الصح من أشهر الكافيهات في الكويت: اسم الطلب بالضبط، مكتوب لك على الكوب. Kuwait's exact coffee and dessert order, written on your cup.">
+  <meta name="theme-color" content="#f6efe2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#16120e" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <meta property="og:title" content="شنو أطلب؟ · Shno Atleb">
+  <meta property="og:description" content="Kuwait's exact coffee and dessert order, written on your cup.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="./public/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./src/styles/main.css">
+  <script type="module" src="./src/main.ts"></script>
 </head>
 <body>
-<div class="bg" aria-hidden="true"><i></i><i></i><i></i></div>
+  <svg width="0" height="0" class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-bean" viewBox="0 0 24 24"><path d="M12 2c5 0 9 4.5 9 10s-4 10-9 10S3 17.5 3 12 7 2 12 2z" fill="currentColor"/><path d="M12 4c-2 3 2 5 0 8s2 5 0 8" fill="none" stroke="var(--paper)" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.8.8-5 4.7 1.4 6.8L12 17l-6.1 3.6 1.4-6.8-5-4.7 6.8-.8z" fill="currentColor"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 10-14 0c0 5.8 7 12 7 12z" fill="currentColor"/><circle cx="12" cy="10" r="2.5" fill="var(--paper)"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 1112 0v6l2 2H4zM10 21h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" fill="currentColor"/></symbol>
+  </svg>
 
-<div class="banner" data-i18n="banner"></div>
+  <a class="skip" href="#main" data-i18n="skip">Skip</a>
+  <p class="banner" data-i18n="banner">banner</p>
 
-<main id="top">
-  <!-- 1. HERO -->
-  <section class="hero" aria-label="Shno Atleb">
-    <div class="hero-frame" id="heroFrame">
-      <svg class="mound" viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <linearGradient id="moundg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C8F48"/><stop offset=".45" stop-color="#4C5E2C"/><stop offset="1" stop-color="#222E19"/></linearGradient>
-          <filter id="rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="16"/></filter>
-          <clipPath id="moundclip"><path id="moundpath" d="M-20 300 L-20 175 C70 150 130 118 210 135 C300 152 340 96 430 82 C490 72 520 62 560 74 C640 96 690 142 770 126 C860 108 930 150 1020 162 L1020 300 Z"/></clipPath>
-        </defs>
-        <g filter="url(#rough)"><path d="M-20 300 L-20 175 C70 150 130 118 210 135 C300 152 340 96 430 82 C490 72 520 62 560 74 C640 96 690 142 770 126 C860 108 930 150 1020 162 L1020 300 Z" fill="url(#moundg)"/></g>
-        <g id="speckles" clip-path="url(#moundclip)"></g>
-      </svg>
+  <header class="top">
+    <a class="brand" href="#top" data-i18n-aria-label="brandAria" aria-label="Shno Atleb">
+      <svg class="icon brand__bean" aria-hidden="true" focusable="false"><use href="#i-bean"/></svg>
+      <span class="brand__ar">شنو أطلب؟</span>
+      <span class="brand__en" lang="en" dir="ltr">Shno Atleb</span>
+    </a>
+    <nav class="nav" data-i18n-aria-label="navAria" aria-label="Main">
+      <a href="#pick" data-i18n="navPick">Pick</a>
+      <a href="#browse" data-i18n="navBrowse">Browse</a>
+      <a href="#areas" data-i18n="navAreas">Areas</a>
+      <a href="#share" data-i18n="navShare">Share</a>
+    </nav>
+    <div class="top__tools">
+      <button type="button" class="chip chip--tool" id="lang-btn" data-i18n="langBtn" data-i18n-aria-label="langAria">EN</button>
+      <button type="button" class="chip chip--tool" id="theme-btn" aria-pressed="false" aria-label="Theme">
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg>
+      </button>
+      <a class="btn btn--small btn--ink" href="#join" data-i18n="navJoin">Join</a>
+    </div>
+  </header>
 
-      <div class="hero-top">
-        <a class="logo" href="#top">Shno Atleb</a>
-        <nav class="pillnav" id="heroNav" data-i18n-aria="navAria"></nav>
-        <button class="lang js-lang" type="button"></button>
-      </div>
+  <main id="main" tabindex="-1">
+    <section class="hero" id="pick" aria-labelledby="hero-title">
+      <div class="hero__copy">
+        <p class="hero__greet" id="greeting"></p>
+        <h1 class="hero__title" id="hero-title" data-i18n="heroTitle">Title</h1>
+        <p class="hero__sub" data-i18n="heroSub">Sub</p>
 
-      <div class="caption" id="caption"></div>
+        <fieldset class="moods">
+          <legend data-i18n="moodLegend">Mood</legend>
+          <div class="moods__row" id="moods"></div>
+        </fieldset>
 
-      <div class="stage" id="stage" tabindex="0" role="group" aria-roledescription="carousel" data-i18n-aria="heroAria">
-        <div class="tiles" id="tiles"></div>
-        <div class="cupwrap">
-          <div class="cup-art" id="cupArt" data-kind="cup">
-            <svg class="cup" viewBox="0 0 200 300" aria-hidden="true">
-              <defs>
-                <clipPath id="cupclip"><path d="M26 34 L174 34 L156 280 Q155 290 145 290 L55 290 Q45 290 44 280 Z"/></clipPath>
-                <linearGradient id="shine" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".18" stop-color="#fff" stop-opacity=".38"/><stop offset=".32" stop-color="#fff" stop-opacity="0"/><stop offset=".84" stop-color="#fff" stop-opacity="0"/><stop offset=".92" stop-color="#fff" stop-opacity=".24"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-                <linearGradient id="depth" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
-              </defs>
-              <ellipse cx="100" cy="292" rx="62" ry="8" fill="#000" opacity=".3"/>
-              <g clip-path="url(#cupclip)">
-                <rect x="0" y="34" width="200" height="270" fill="rgba(255,255,255,.12)"/>
-                <path class="L1" d="M0 78 Q50 66 100 78 T200 78 V300 H0Z"/>
-                <path class="L2" d="M0 120 Q50 132 100 120 T200 120 V300 H0Z"/>
-                <path class="L3" d="M0 170 Q50 158 100 170 T200 170 V300 H0Z"/>
-                <path class="L4" d="M0 222 Q50 234 100 222 T200 222 V300 H0Z"/>
-                <g fill="rgba(255,255,255,.26)" stroke="rgba(255,255,255,.6)" stroke-width="1.5">
-                  <rect x="44" y="46" width="44" height="40" rx="9" transform="rotate(-12 66 66)"/>
-                  <rect x="106" y="42" width="46" height="42" rx="10" transform="rotate(10 129 63)"/>
-                  <rect x="76" y="82" width="40" height="36" rx="9" transform="rotate(4 96 100)"/>
-                </g>
-                <rect x="0" y="34" width="200" height="260" fill="url(#depth)"/>
-                <rect x="0" y="34" width="200" height="260" fill="url(#shine)"/>
-              </g>
-              <path d="M26 34 L174 34 L156 280 Q155 290 145 290 L55 290 Q45 290 44 280 Z" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2.5"/>
-              <ellipse cx="100" cy="34" rx="74" ry="7" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.7)" stroke-width="2.5"/>
-            </svg>
-            <svg class="cake" viewBox="0 0 200 300" aria-hidden="true">
-              <defs>
-                <clipPath id="cakefront"><rect x="34" y="190" width="116" height="88" rx="8"/></clipPath>
-                <clipPath id="cakeside"><path d="M150 190 L176 168 L176 256 L150 278 Z"/></clipPath>
-              </defs>
-              <ellipse cx="100" cy="284" rx="94" ry="14" fill="#000" opacity=".28"/>
-              <ellipse cx="100" cy="278" rx="92" ry="13" fill="#F3F0E2"/>
-              <ellipse cx="100" cy="276" rx="70" ry="9" fill="#E3DFC9"/>
-              <g clip-path="url(#cakeside)"><rect x="150" y="160" width="30" height="24" class="L1"/><rect x="150" y="184" width="30" height="24" class="L2"/><rect x="150" y="208" width="30" height="24" class="L3"/><rect x="150" y="232" width="30" height="50" class="L4"/><rect x="150" y="160" width="30" height="130" fill="#000" opacity=".28"/></g>
-              <g clip-path="url(#cakefront)"><rect x="34" y="190" width="116" height="22" class="L1"/><rect x="34" y="212" width="116" height="22" class="L2"/><rect x="34" y="234" width="116" height="22" class="L3"/><rect x="34" y="256" width="116" height="24" class="L4"/><rect x="34" y="190" width="116" height="90" fill="url(#shine)"/></g>
-              <path d="M34 190 L150 190 L176 168 L60 168 Z" class="L1"/>
-              <path d="M34 190 L150 190 L176 168 L60 168 Z" fill="#fff" opacity=".22"/>
-              <ellipse cx="108" cy="178" rx="16" ry="5.5" fill="#B96F3A"/>
-              <ellipse cx="108" cy="176.5" rx="12" ry="3.5" fill="#D79255"/>
-            </svg>
-            <div class="cup-label" id="cupLabel"></div>
-          </div>
+        <div class="hero__actions">
+          <button type="button" class="btn btn--sun" id="shuffle-btn">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-dice"/></svg>
+            <span data-i18n="shuffle">Shuffle</span>
+          </button>
+          <button type="button" class="btn btn--ink" id="show-btn">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-eye"/></svg>
+            <span data-i18n="showBarista">Show barista</span>
+          </button>
+          <button type="button" class="btn btn--ghost" id="copy-btn">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-copy"/></svg>
+            <span data-i18n="copyOrder">Copy</span>
+          </button>
         </div>
-        <button class="pricetile" id="priceTile" type="button"><b id="ptPrice"></b><small id="ptKd"></small><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
       </div>
+      <div class="hero__stage" id="stage"></div>
+    </section>
 
-      <h1 class="hero-h1" data-i18n="heroH1"></h1>
+    <div class="ticker" data-i18n-aria-label="tickerLabel" aria-label="Ticker" role="group">
+      <div class="ticker__track" id="ticker"></div>
     </div>
 
-    <div class="hero-under">
-      <form class="search" id="searchForm" role="search">
-        <label class="sr" for="q" data-i18n="searchLabel"></label>
-        <input id="q" type="search" autocomplete="off" data-i18n-ph="searchPh">
-        <button type="submit" data-i18n="searchBtn"></button>
+    <section class="section" id="top" aria-labelledby="top-title">
+      <header class="section__head">
+        <h2 id="top-title" data-i18n="topTitle">Top 10</h2>
+        <p data-i18n="topSub">Sub</p>
+      </header>
+      <ol class="rail" id="top-list"></ol>
+    </section>
+
+    <section class="section" id="browse" aria-labelledby="browse-title">
+      <header class="section__head">
+        <h2 id="browse-title" data-i18n="browseTitle">Browse</h2>
+        <p data-i18n="browseSub">Sub</p>
+      </header>
+      <form class="filters" id="filters" role="search" novalidate>
+        <label class="field field--wide">
+          <span class="field__label" data-i18n="searchLabel">Search</span>
+          <input class="input" type="search" id="f-query" name="q" maxlength="60" autocomplete="off" data-i18n-placeholder="searchPh" placeholder="Search">
+        </label>
+        <label class="field"><span class="field__label" data-i18n="fArea">Area</span><select class="input" id="f-area" name="area"></select></label>
+        <label class="field"><span class="field__label" data-i18n="fCafe">Cafe</span><select class="input" id="f-cafe" name="cafe"></select></label>
+        <label class="field"><span class="field__label" data-i18n="fPrice">Price</span><select class="input" id="f-price" name="price"></select></label>
+        <button type="button" class="btn btn--ghost btn--small" id="f-clear" data-i18n="clearFilters">Clear</button>
       </form>
-      <p class="sub" data-i18n="heroSub"></p>
-      <p class="tag" data-i18n="tagline"></p>
-    </div>
-  </section>
+      <div class="cats" id="cats" role="group" data-i18n-aria-label="browseTitle" aria-label="Categories"></div>
+      <p class="count" id="count" role="status" aria-live="polite"></p>
+      <ul class="grid" id="grid"></ul>
+      <p class="empty" id="empty" hidden data-i18n="empty">Empty</p>
+    </section>
 
-  <!-- 2. Top 10 -->
-  <section class="wrap" id="top10">
-    <div class="sec-head"><h2 data-i18n="topTitle"></h2><p data-i18n="topSub"></p></div>
-    <div class="scroller" id="topScroller" tabindex="0"></div>
-  </section>
+    <section class="section section--map" id="areas" aria-labelledby="areas-title">
+      <header class="section__head">
+        <h2 id="areas-title" data-i18n="areasTitle">Areas</h2>
+        <p data-i18n="areasSub">Sub</p>
+      </header>
+      <div class="map" id="map"></div>
+      <p class="note" data-i18n="mapNote">Note</p>
+    </section>
 
-  <!-- 3-5. Chips, filters, grid -->
-  <section class="wrap" id="menu">
-    <div class="sec-head"><h2 data-i18n="allTitle"></h2><p data-i18n="allSub"></p></div>
-    <div class="chips" id="chips" role="group"></div>
-    <div class="filters" id="filters">
-      <div><label for="fArea" data-i18n="fArea"></label><select id="fArea"></select></div>
-      <div><label for="fCafe" data-i18n="fCafe"></label><select id="fCafe"></select></div>
-      <div><label for="fPrice" data-i18n="fPrice"></label><select id="fPrice"></select></div>
-      <div><label for="fType" data-i18n="fType"></label><select id="fType"></select></div>
-    </div>
-    <div class="resultbar"><span id="count" aria-live="polite"></span><button class="linkbtn" id="resetBtn" type="button" data-i18n="reset"></button></div>
-    <div class="grid" id="grid"></div>
-  </section>
-
-  <!-- 6. Areas -->
-  <section class="wrap" id="areas">
-    <div class="sec-head"><h2 data-i18n="areaTitle"></h2></div>
-    <div class="areas" id="areaTiles"></div>
-  </section>
-
-  <!-- 7. Submit -->
-  <section class="wrap" id="submit">
-    <div class="panel">
-      <h2 data-i18n="submitTitle"></h2>
-      <p class="lead" data-i18n="submitSub"></p>
-      <div class="note" id="corrNote" hidden></div>
-      <form class="form" id="submitForm" style="margin-top:12px">
-        <div class="two">
-          <div><label for="sCafe" data-i18n="sCafe"></label><input id="sCafe" required></div>
-          <div><label for="sOrder" data-i18n="sOrder"></label><input id="sOrder" required></div>
-        </div>
-        <div class="two">
-          <div><label for="sArea" data-i18n="fArea"></label><select id="sArea"></select></div>
-          <div><label for="sPrice" data-i18n="sPrice"></label><input id="sPrice" inputmode="decimal" placeholder="1.750"></div>
-        </div>
-        <div><label for="sWhy" data-i18n="sWhy"></label><textarea id="sWhy"></textarea></div>
-        <button class="btn" type="submit" data-i18n="sBtn"></button>
+    <section class="section section--forms" id="share" aria-labelledby="share-title">
+      <header class="section__head">
+        <h2 id="share-title" data-i18n="submitTitle">Share</h2>
+        <p data-i18n="submitSub">Sub</p>
+      </header>
+      <form class="form card-form" id="suggest-form" novalidate autocomplete="off">
+        <p class="form__for" id="correcting" hidden></p>
+        <div class="form__errors" id="suggest-errors" role="alert" tabindex="-1" hidden></div>
+        <label class="field"><span class="field__label" data-i18n="sCafe">Cafe</span><input class="input" name="cafe" maxlength="60" required aria-describedby="suggest-cafe-err"><span class="field__err" id="suggest-cafe-err"></span></label>
+        <label class="field"><span class="field__label" data-i18n="sOrder">Order</span><input class="input" name="order" maxlength="80" required aria-describedby="suggest-order-err"><span class="field__err" id="suggest-order-err"></span></label>
+        <label class="field"><span class="field__label" data-i18n="fArea">Area</span><select class="input" name="area" id="s-area" required aria-describedby="suggest-area-err"></select><span class="field__err" id="suggest-area-err"></span></label>
+        <label class="field"><span class="field__label" data-i18n="sPrice">Price</span><input class="input" name="price" inputmode="decimal" maxlength="8" dir="ltr" aria-describedby="suggest-price-err"><span class="field__err" id="suggest-price-err"></span></label>
+        <label class="field field--wide"><span class="field__label" data-i18n="sWhy">Why</span><input class="input" name="why" maxlength="200"></label>
+        <label class="trap" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+        <button class="btn btn--sun" type="submit" data-i18n="sBtn">Send</button>
+        <p class="form__result" id="suggest-result" role="status" aria-live="polite"></p>
       </form>
-      <div class="success" id="submitOk" hidden>
-        <strong data-i18n="sOk"></strong>
-        <p style="margin-top:6px"><button class="linkbtn" id="submitAgain" type="button" style="color:#F2C14E" data-i18n="sAgain"></button></p>
+    </section>
+
+    <section class="section section--join" id="join" aria-labelledby="join-title">
+      <div class="join">
+        <svg class="icon join__icon" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg>
+        <div>
+          <h2 id="join-title" data-i18n="waitTitle">Join</h2>
+          <p data-i18n="waitSub">Sub</p>
+        </div>
+        <form class="form join__form" id="wait-form" novalidate autocomplete="off">
+          <label class="field field--wide"><span class="field__label" data-i18n="waitLabel">Contact</span><input class="input" name="contact" dir="ltr" maxlength="120" inputmode="email" data-i18n-placeholder="waitPh" placeholder="" aria-describedby="wait-contact-err"><span class="field__err" id="wait-contact-err"></span></label>
+          <label class="trap" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+          <button class="btn btn--ink" type="submit" data-i18n="waitBtn">Join</button>
+          <p class="form__result" id="wait-result" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p data-i18n="footDisclaimer">Disclaimer</p>
+    <p><a href="#share" id="foot-correct" data-i18n="footCorrect">Correct</a></p>
+  </footer>
+
+  <dialog class="barista" id="barista" aria-labelledby="dlg-name">
+    <div class="barista__card">
+      <button type="button" class="barista__close" id="dlg-close" data-i18n-aria-label="dlgClose" aria-label="Close"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+      <p class="barista__say" data-i18n="sayIt">Say</p>
+      <p class="barista__name" id="dlg-name" lang="en" dir="ltr"></p>
+      <p class="barista__name barista__name--ar" id="dlg-name-ar" lang="ar" dir="rtl"></p>
+      <p class="barista__cafe" id="dlg-cafe"></p>
+      <p class="barista__price" id="dlg-price"></p>
+      <div class="barista__actions">
+        <button type="button" class="btn btn--sun" id="dlg-copy" data-i18n="dlgCopy">Copy</button>
+        <button type="button" class="btn btn--ink" id="dlg-share" data-i18n="dlgShare" hidden>Share</button>
+        <a class="btn btn--ghost" id="dlg-map" target="_blank" rel="noopener noreferrer" data-i18n="dlgMap">Map</a>
       </div>
     </div>
-  </section>
+  </dialog>
 
-  <!-- 8. Waitlist -->
-  <section class="wrap" id="waitlist">
-    <div class="panel light">
-      <h2 data-i18n="waitTitle"></h2>
-      <p class="lead" data-i18n="waitSub"></p>
-      <form class="form" id="waitForm">
-        <div><label for="wContact" data-i18n="wLabel"></label><input id="wContact" required data-i18n-ph="wPh"></div>
-        <button class="btn" type="submit" data-i18n="wBtn"></button>
-      </form>
-      <div class="success" id="waitOk" hidden><strong data-i18n="wOk"></strong></div>
-    </div>
-  </section>
-</main>
-
-<!-- 9. Footer -->
-<footer>
-  <div class="wrap cols">
-    <p data-i18n="disclaimer"></p>
-    <p><a href="#submit" id="footCorr" data-i18n="footCorr"></a></p>
-    <p>Instagram <a href="#">@shnoatleb</a> · TikTok <a href="#">@shnoatleb.kw</a></p>
-    <p class="small">© <span id="yr"></span> شنو أطلب؟ / Shno Atleb</p>
-  </div>
-</footer>
-
-<!-- Floating nav, shown after the hero scrolls away -->
-<div class="dock" id="dock"><nav class="pillnav" id="dockNav" data-i18n-aria="navAria"></nav><button class="lang js-lang" type="button" style="background:rgba(250,248,236,.16)"></button></div>
-
-<script src="data/items.js"></script>
-<script src="js/i18n.js"></script>
-<script src="js/hero-art.js"></script>
-<script src="js/app.js"></script>
+  <noscript><p class="banner">يتطلب الموقع تفعيل JavaScript. This site needs JavaScript.</p></noscript>
 </body>
 </html>

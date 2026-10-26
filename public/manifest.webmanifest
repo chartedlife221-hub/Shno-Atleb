@@ -1,0 +1,13 @@
+{
+  "name": "شنو أطلب؟ · Shno Atleb",
+  "short_name": "شنو أطلب؟",
+  "description": "The exact coffee and dessert order at Kuwait's best-selling cafés.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6efe2",
+  "theme_color": "#f4b52e",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
