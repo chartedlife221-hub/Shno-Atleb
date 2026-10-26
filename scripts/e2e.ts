@@ -16,7 +16,10 @@ const base = `http://localhost:${server.port}/`;
 let failures = 0;
 const check = (name: string, ok: boolean, detail = ''): void => {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${ok || !detail ? '' : ` -> ${detail}`}`);
-  if (!ok) failures += 1;
+  if (!ok) {
+    failures += 1;
+    if (process.env['GITHUB_ACTIONS']) console.log(`::error title=e2e::${name}${detail ? ` -> ${detail}` : ''}`);
+  }
 };
 
 const browser = await chromium.launch();
@@ -65,7 +68,10 @@ check('the card shows the order the visitor touched', ((await page.locator('#dlg
 await page.waitForSelector('.barista__card.is-handoff', { timeout: 30000 }).catch(() => undefined);
 check('stage 3: the hand-off starts', await page.locator('.barista__card.is-handoff').count() === 1);
 await page.waitForFunction(() => Number(document.getElementById('ho-fg')?.dataset['bottom'] || 0) > 0, null, { timeout: 15000 }).catch(() => undefined);
-await page.waitForTimeout(4500);
+await page.waitForFunction(() => {
+  const card = document.querySelector('.barista__card')!.getBoundingClientRect();
+  return Number(document.getElementById('ho-fg')!.dataset['bottom'] || 0) - card.bottom > 20;
+}, null, { timeout: 30000 }).catch(() => undefined);
 const breakout = await page.evaluate(() => {
   const card = document.querySelector('.barista__card')!.getBoundingClientRect();
   return Number(document.getElementById('ho-fg')!.dataset['bottom'] || 0) - card.bottom;
