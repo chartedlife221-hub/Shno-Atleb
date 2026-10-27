@@ -107,6 +107,7 @@ async function main(): Promise<void> {
   const file = join(dist, 'index.html');
   let html = prerender(readFileSync(file, 'utf8'));
   html = html.replace(/<meta charset="utf-8">/i, `<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp(endpoint)}"><link rel="manifest" href="./manifest.webmanifest">`);
+  html = html.replace(/<\/head>/i, '<link rel="stylesheet" href="./env.css"></head>');
   if (fontLinks.length) html = html.replace(/<\/head>/i, `${fontLinks.join('')}</head>`);
   if (prerendered < 40) throw new Error(`Arabic prerender only filled ${prerendered} elements; the HTML would show English placeholders without JavaScript`);
   assertNoInlineCode(html);

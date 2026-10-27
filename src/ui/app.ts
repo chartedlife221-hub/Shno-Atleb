@@ -238,5 +238,10 @@ export function startApp(): void {
   show(pickNext(filmed.length ? filmed : pool, null), false);
   observeReveal(document);
   scrollSpy();
+  // the wall's leaves sway only while the hero is on screen
+  const env = document.querySelector('.env');
+  if (env && typeof IntersectionObserver !== 'undefined') {
+    new IntersectionObserver((entries) => env.classList.toggle('is-still', !entries.some((e) => e.isIntersecting))).observe(must('#pick', HTMLElement));
+  }
   document.body.classList.add('is-ready');
 }

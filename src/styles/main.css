@@ -1,6 +1,5 @@
 /* ===== tokens: "Golden Hour" — latte cream wall, caramel arch, espresso ink (dark: espresso night) ===== */
 :root {
-  --wall: #f4ecdf;
   --wall-2: #e9dcc6;
   --sage: #caa57c;
   --sage-deep: #7a4f2c;
@@ -8,9 +7,9 @@
   --muted: #5c4637;
   --paper: #fffaf2;
   --sun: #e0a03a;
-  --terra: #9c3f1c;
+  --terra: #8a3517;
   --rose: #e79aa6;
-  --leaf: #2f6b45;
+  --leaf: #1f4f33;
   --on-sun: #2a1d15;
   --press-1: #8a5a35;
   --press-2: #5e3b21;
@@ -21,8 +20,11 @@
   --glass-edge: rgba(255, 250, 242, .9);
   --glass-edge-2: rgba(120, 90, 60, .25);
   --glass-shadow: 0 1px 0 rgba(255, 255, 255, .95) inset, 0 -14px 26px rgba(255, 250, 242, .25) inset, 0 22px 50px -24px rgba(70, 45, 25, .45), 0 3px 10px rgba(70, 45, 25, .1);
-  --light-a: rgba(255, 236, 200, .7);
-  --light-b: rgba(224, 160, 58, .14);
+  --wall: #f7f0e4;
+  --shade: #dac7ab;
+  --sunlight: #ffdca0;
+  --glow: .45;
+  --glow-blend: soft-light;
   --sea: #d7e4e2;
   --sand: #f1dfb8;
   --r: 26px;
@@ -33,22 +35,22 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --wall: #16110d; --wall-2: #1f1813; --sage: #3b2b20; --sage-deep: #e9b872; --ink: #f5ebdc; --muted: #cdbba5;
+    --wall: #251c16; --wall-2: #1f1813; --sage: #3b2b20; --sage-deep: #e9b872; --ink: #f5ebdc; --muted: #cdbba5;
     --paper: #221a14; --sun: #f2b552; --terra: #ffb27d; --leaf: #9edcb2; --on-sun: #1f160f; --press-1: #f2b552; --press-2: #d08f2c; --on-press: #1a120c;
     --art-line: rgba(245, 235, 220, .72);
     --glass-top: rgba(255, 240, 220, .1); --glass-bot: rgba(255, 240, 220, .035); --glass-edge: rgba(255, 240, 220, .28); --glass-edge-2: rgba(255, 240, 220, .16);
     --glass-shadow: 0 1px 0 rgba(255, 240, 220, .22) inset, 0 -14px 26px rgba(255, 240, 220, .03) inset, 0 22px 50px -22px rgba(0, 0, 0, .85), 0 3px 10px rgba(0, 0, 0, .35);
-    --light-a: rgba(255, 200, 130, .16); --light-b: rgba(240, 160, 80, .1);
+    --shade: #6f6255; --sunlight: #ffb768; --glow: .22; --glow-blend: screen;
     --sea: #1e3036; --sand: #3a2d1f;
   }
 }
 :root[data-theme="dark"] {
-  --wall: #16110d; --wall-2: #1f1813; --sage: #3b2b20; --sage-deep: #e9b872; --ink: #f5ebdc; --muted: #cdbba5;
+  --wall: #251c16; --wall-2: #1f1813; --sage: #3b2b20; --sage-deep: #e9b872; --ink: #f5ebdc; --muted: #cdbba5;
     --paper: #221a14; --sun: #f2b552; --terra: #ffb27d; --leaf: #9edcb2; --on-sun: #1f160f; --press-1: #f2b552; --press-2: #d08f2c; --on-press: #1a120c;
     --art-line: rgba(245, 235, 220, .72);
     --glass-top: rgba(255, 240, 220, .1); --glass-bot: rgba(255, 240, 220, .035); --glass-edge: rgba(255, 240, 220, .28); --glass-edge-2: rgba(255, 240, 220, .16);
     --glass-shadow: 0 1px 0 rgba(255, 240, 220, .22) inset, 0 -14px 26px rgba(255, 240, 220, .03) inset, 0 22px 50px -22px rgba(0, 0, 0, .85), 0 3px 10px rgba(0, 0, 0, .35);
-    --light-a: rgba(255, 200, 130, .16); --light-b: rgba(240, 160, 80, .1);
+    --shade: #6f6255; --sunlight: #ffb768; --glow: .22; --glow-blend: screen;
     --sea: #1e3036; --sand: #3a2d1f;
 }
 
@@ -72,23 +74,39 @@ main:focus { outline: none; }
 .skip:focus { top: 1rem; }
 .banner { text-align: center; color: var(--muted); font-size: .85rem; padding: .5rem 1rem; }
 
-/* ===== the room: wall, arch, light, grain ===== */
-.env { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
-  background: radial-gradient(120% 80% at 20% 0%, color-mix(in srgb, var(--paper) 90%, transparent), transparent 60%), linear-gradient(180deg, var(--wall), var(--wall-2)); }
-.env__arch { position: absolute; inset-block-end: -4vh; inset-inline-end: 5vw; width: min(40vw, 560px); height: 88vh; border-radius: 999px 999px 0 0;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--sage) 95%, #fff), var(--sage)); box-shadow: 0 30px 80px -30px rgba(70, 45, 25, .5); }
-.env__arch::after { content: ""; position: absolute; inset: 7% 8% 0; border-radius: 999px 999px 0 0; background: linear-gradient(180deg, color-mix(in srgb, var(--sage) 78%, #000), color-mix(in srgb, var(--sage) 92%, #000)); box-shadow: inset 0 18px 40px rgba(0, 0, 0, .18); }
-.env__arch--2 { inset-inline-end: auto; inset-inline-start: -6vw; width: min(26vw, 360px); height: 58vh; opacity: .5; }
-.env__light { position: absolute; inset: 0; background: radial-gradient(60% 50% at 85% 8%, var(--light-a), transparent 70%), linear-gradient(180deg, transparent 70%, var(--light-b)); }
-.env__grain { position: absolute; inset: 0; filter: url(#grain); opacity: .18; mix-blend-mode: multiply; }
-:root[data-theme="dark"] .env__grain { mix-blend-mode: screen; opacity: .1; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .env__grain { mix-blend-mode: screen; opacity: .1; } }
+/* ===== the room: sunlit lime plaster, window light and the shadow of a plant (tools/background) ===== */
+.env { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: var(--wall); }
+.env i, .env b { position: absolute; display: block; }
+.env__wall { inset: 0; background-position: 0 0; background-size: 768px 768px; background-repeat: repeat; mix-blend-mode: multiply; }
+/* everything outside the window light is in shade; the light and the leaf shadows are painted into one group */
+.env__shade { inset: -3%; isolation: isolate; background: var(--shade); mix-blend-mode: multiply; }
+.env__sun, .env__leaves, .env__glow { inset: 0; -webkit-mask-size: cover; mask-size: cover; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: 78% 22%; mask-position: 78% 22%; }
+.env__sun { background: #fff; }
+.env__leaves { background: var(--shade); transform-origin: 100% 25%; }
+.env__leaves--a { animation: sway-r 7.3s ease-in-out infinite alternate, sway-t 4.1s ease-in-out infinite alternate; }
+.env__leaves--b { animation: sway-r 5.6s ease-in-out -2s infinite alternate-reverse, sway-t 3.3s ease-in-out -1s infinite alternate; }
+.env__glow { inset: -3%; background: var(--sunlight); mix-blend-mode: var(--glow-blend); opacity: var(--glow); }
+.env__motes { inset: 0; }
+.env__motes b { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 246, 225, .9); box-shadow: 0 0 6px 1px rgba(255, 230, 180, .6); opacity: 0; animation: mote 14s linear infinite; }
+.env__motes b:nth-child(1) { left: 58%; top: 30%; animation-delay: 0s; }
+.env__motes b:nth-child(2) { left: 66%; top: 52%; animation-delay: -3s; animation-duration: 17s; }
+.env__motes b:nth-child(3) { left: 72%; top: 18%; animation-delay: -6s; width: 3px; height: 3px; }
+.env__motes b:nth-child(4) { left: 49%; top: 62%; animation-delay: -9s; animation-duration: 19s; }
+.env__motes b:nth-child(5) { left: 80%; top: 40%; animation-delay: -2s; width: 5px; height: 5px; filter: blur(1px); }
+.env__motes b:nth-child(6) { left: 61%; top: 75%; animation-delay: -11s; }
+.env__motes b:nth-child(7) { left: 70%; top: 66%; animation-delay: -5s; animation-duration: 21s; width: 3px; height: 3px; }
+.env__motes b:nth-child(8) { left: 54%; top: 44%; animation-delay: -13s; width: 6px; height: 6px; filter: blur(2px); }
+.env__motes b:nth-child(9) { left: 76%; top: 26%; animation-delay: -8s; animation-duration: 15s; }
+@keyframes sway-r { from { rotate: -.6deg; } to { rotate: .9deg; } }
+@keyframes sway-t { from { translate: 0 0; } to { translate: -7px 5px; } }
+@keyframes mote { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: .8; } 85% { opacity: .6; } 100% { opacity: 0; transform: translate(-60px, -90px); } }
+/* while browsing below the hero the wall rests, so the glass cards stay smooth */
+.env.is-still .env__leaves, .env.is-still .env__motes b { animation-play-state: paused; }
 @supports (animation-timeline: scroll()) {
-  .env__arch { animation: drift linear both; animation-timeline: scroll(root); }
-  .env__arch--2 { animation-name: drift2; }
+  .env__shade, .env__glow { animation: sun-move linear both; animation-timeline: scroll(root); }
 }
-@keyframes drift { to { transform: translateY(8vh) scale(1.04); } }
-@keyframes drift2 { to { transform: translateY(-10vh); } }
+@keyframes sun-move { to { translate: -4vw 3vh; } }
+@media (max-width: 899px) { .env__sun, .env__leaves, .env__glow { -webkit-mask-position: 88% 12%; mask-position: 88% 12%; } .env__motes b:nth-child(n+6) { display: none; } }
 
 /* ===== frosted glass material ===== */
 .glass, .ticket__in, .card-form, .filters, .chip, .btn--glass, .top, .pin, .count-pill {
@@ -172,7 +190,7 @@ main:focus { outline: none; }
 .order__name { font-size: 1.2rem; font-weight: 600; line-height: 1.25; }
 .order__cafe { color: var(--muted); font-size: .9rem; }
 .order__price { font-weight: 600; color: var(--terra); }
-@media (max-width: 899px) { .portal { aspect-ratio: 4 / 3; max-height: 52dvh; border-radius: 24px; } .hero__stage { order: -1; } .env__arch { inset-block-end: auto; inset-block-start: 4.5rem; height: 52vh; width: 82vw; inset-inline-end: 9vw; -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); } .env__arch--2 { display: none; } .order { inset-inline: .8rem; max-width: none; } }
+@media (max-width: 899px) { .portal { aspect-ratio: 4 / 3; max-height: 52dvh; border-radius: 24px; } .hero__stage { order: -1; } .order { inset-inline: .8rem; max-width: none; } }
 
 /* ===== ticker ===== */
 .ticker { direction: ltr; overflow: hidden; margin-block: .5rem 1rem; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
