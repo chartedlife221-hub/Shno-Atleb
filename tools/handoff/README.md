@@ -11,4 +11,4 @@ How `public/media/handoff-*.{mp4,webm}` were made from the source clips. Not par
 4. `enc.sh <clip>`: H.264 (Safari/iOS) and VP9 encodes with short keyframe spacing, plus the still fallbacks
    `handoff-<clip>-fg.png` (RGBA at the peak) and `handoff-<clip>-bg.jpg`.
 
-Frames used: hot 165–300, iced 70–245, Spanish latte 50–235 (23.976 fps; thin wisps removed, 24 px black border trimmed). Peak times are in `src/ui/clips.ts`.
+Frames used: hot 165–300, iced 70–245, Spanish latte 50–235, caramel frappuccino 0–191 at 540×960 (23.976 fps; thin wisps removed, 24 px black border trimmed). Peak times are in `src/ui/clips.ts`.

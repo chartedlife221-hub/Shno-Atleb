@@ -24,7 +24,7 @@ for i in range(n):
         keep=np.isin(lab,[j+1 for j,ar in enumerate(areas) if ar>=0.15*big])
         reach=cv2.dilate(keep.astype(np.uint8),np.ones((15,15),np.uint8))>0
         m=m*reach
-    if clip=='sl':
+    if clip in ('sl','cf'):
         # drop thin wisps (stray bits of forearm and the straw) so the cut-out stays one solid hand + glass
         core=cv2.morphologyEx((m>0.5).astype(np.uint8),cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(25,25)))
         m=m*(cv2.dilate(core,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(15,15)))>0)

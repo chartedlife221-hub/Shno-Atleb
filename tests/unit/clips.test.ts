@@ -14,6 +14,10 @@ describe('footage always matches the ordered drink', () => {
     }
     expect(clipFor(ITEMS.find((i) => i.id === 'iced-spanish-latte')!)?.id).toBe('spanish');
   });
+  it('uses the frappuccino glass only for the Caramel Frappuccino', () => {
+    for (const it of ITEMS) if (clipFor(it)?.id === 'frappe') expect(it.id).toBe('caramel-frappuccino');
+    expect(clipFor(ITEMS.find((i) => i.id === 'caramel-frappuccino')!)?.id).toBe('frappe');
+  });
   it('uses the white takeaway cup only for hot drinks, never for iced drinks or desserts', () => {
     for (const it of ITEMS) {
       if (clipFor(it)?.id !== 'hot') continue;
