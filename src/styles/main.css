@@ -77,6 +77,8 @@ main:focus { outline: none; }
 /* ===== the room: sunlit lime plaster, window light and the shadow of a plant (tools/background) ===== */
 .env { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: var(--wall); }
 .env i, .env b { position: absolute; display: block; }
+.env__wall, .env__shade, .env__glow { transition: opacity 1.2s ease; }
+.env:not(.is-lit) .env__wall, .env:not(.is-lit) .env__shade, .env:not(.is-lit) .env__glow { opacity: 0; }
 .env__wall { inset: 0; background-position: 0 0; background-size: 768px 768px; background-repeat: repeat; mix-blend-mode: multiply; }
 /* everything outside the window light is in shade; the light and the leaf shadows are painted into one group */
 .env__shade { inset: -3%; isolation: isolate; background: var(--shade); mix-blend-mode: multiply; }
@@ -86,27 +88,15 @@ main:focus { outline: none; }
 .env__leaves--a { animation: sway-r 7.3s ease-in-out infinite alternate, sway-t 4.1s ease-in-out infinite alternate; }
 .env__leaves--b { animation: sway-r 5.6s ease-in-out -2s infinite alternate-reverse, sway-t 3.3s ease-in-out -1s infinite alternate; }
 .env__glow { inset: -3%; background: var(--sunlight); mix-blend-mode: var(--glow-blend); opacity: var(--glow); }
-.env__motes { inset: 0; }
-.env__motes b { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 246, 225, .9); box-shadow: 0 0 6px 1px rgba(255, 230, 180, .6); opacity: 0; animation: mote 14s linear infinite; }
-.env__motes b:nth-child(1) { left: 58%; top: 30%; animation-delay: 0s; }
-.env__motes b:nth-child(2) { left: 66%; top: 52%; animation-delay: -3s; animation-duration: 17s; }
-.env__motes b:nth-child(3) { left: 72%; top: 18%; animation-delay: -6s; width: 3px; height: 3px; }
-.env__motes b:nth-child(4) { left: 49%; top: 62%; animation-delay: -9s; animation-duration: 19s; }
-.env__motes b:nth-child(5) { left: 80%; top: 40%; animation-delay: -2s; width: 5px; height: 5px; filter: blur(1px); }
-.env__motes b:nth-child(6) { left: 61%; top: 75%; animation-delay: -11s; }
-.env__motes b:nth-child(7) { left: 70%; top: 66%; animation-delay: -5s; animation-duration: 21s; width: 3px; height: 3px; }
-.env__motes b:nth-child(8) { left: 54%; top: 44%; animation-delay: -13s; width: 6px; height: 6px; filter: blur(2px); }
-.env__motes b:nth-child(9) { left: 76%; top: 26%; animation-delay: -8s; animation-duration: 15s; }
 @keyframes sway-r { from { rotate: -.6deg; } to { rotate: .9deg; } }
 @keyframes sway-t { from { translate: 0 0; } to { translate: -7px 5px; } }
-@keyframes mote { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: .8; } 85% { opacity: .6; } 100% { opacity: 0; transform: translate(-60px, -90px); } }
 /* while browsing below the hero the wall rests, so the glass cards stay smooth */
-.env.is-still .env__leaves, .env.is-still .env__motes b { animation-play-state: paused; }
+.env.is-still .env__leaves { animation-play-state: paused; }
 @supports (animation-timeline: scroll()) {
   .env__shade, .env__glow { animation: sun-move linear both; animation-timeline: scroll(root); }
 }
 @keyframes sun-move { to { translate: -4vw 3vh; } }
-@media (max-width: 899px) { .env__sun, .env__leaves, .env__glow { -webkit-mask-position: 88% 12%; mask-position: 88% 12%; } .env__motes b:nth-child(n+6) { display: none; } }
+@media (max-width: 899px) { .env__sun, .env__leaves, .env__glow { -webkit-mask-position: 88% 12%; mask-position: 88% 12%; } }
 
 /* ===== frosted glass material ===== */
 .glass, .ticket__in, .card-form, .filters, .chip, .btn--glass, .top, .pin, .count-pill {
@@ -176,6 +166,7 @@ main:focus { outline: none; }
   box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 calc(22px + 60px * var(--depth)) calc(40px + 70px * var(--depth)) calc(-26px - 4px * var(--depth)) rgba(30, 18, 8, .6), 0 4px 14px rgba(30, 18, 8, .25); }
 .portal__video { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; transform: translateZ(0); object-fit: cover; object-position: var(--focus, 50% 50%); opacity: 0; transition: opacity .6s; background: #2a1c14; }
 .portal__video.is-on { opacity: 1; }
+.portal.is-returning .portal__video { opacity: .55; transition: opacity .2s; }
 .portal__backdrop { position: absolute; inset: -8%; width: 116%; height: 116%; max-width: none; object-fit: cover; filter: blur(22px) saturate(1.1) brightness(.85); opacity: 0; transition: opacity .6s; }
 .portal.is-tall .portal__backdrop { opacity: 1; }
 .portal.is-tall .portal__video { object-fit: contain; object-position: 50% 50%; background: transparent; }
@@ -230,6 +221,10 @@ main:focus { outline: none; }
 .dot { width: .6rem; height: .6rem; border-radius: 50%; margin-block-start: .55em; flex: none; box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 22%, transparent); }
 .dot--new { background: var(--leaf); color: var(--leaf); }
 .dot--old { background: var(--sun); color: var(--sun); }
+.dot--demo { background: var(--muted); color: var(--muted); }
+.tag__demo { margin-inline-start: .35rem; padding-inline-start: .4rem; border-inline-start: 1px solid currentColor; font-weight: 600; }
+.barista__demo { font-size: .78rem; opacity: .8; }
+.is-scene .barista__demo { flex-basis: 100%; text-shadow: 0 2px 12px rgba(0, 0, 0, .6); }
 .ticket--stale .ticket__in { opacity: .92; }
 .ticket__actions { display: flex; flex-wrap: wrap; gap: .4rem; margin-block-start: .6rem; }
 .tbtn { padding: .2rem .75rem; font-size: .84rem; gap: .35rem; background: rgba(255, 255, 255, .35); border: 1px solid var(--glass-edge); }

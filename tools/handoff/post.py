@@ -2,6 +2,29 @@ import numpy as np, cv2, sys, os, subprocess
 clip=sys.argv[1]; a=int(sys.argv[2])
 fr=np.load(f'{clip}.npy',mmap_mode='r')
 raw=np.load(f'{clip}_raw.npy').astype(np.float32)/255.
+import os
+ARM = os.path.exists(f'{clip}_human.npy') and clip=='sl'
+if ARM:
+    hum=np.load(f'{clip}_human.npy').astype(np.float32)/255.
+    obj_only=raw.copy(); ramps=[]
+    # wrist/arm continuity: add the forearm (human segmentation) below the top of the glass and left of it,
+    # fading out upwards so it blends into the arm left in the background instead of ending in a cut
+    yy,xx=np.mgrid[0:raw.shape[1],0:raw.shape[2]]
+    K=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(25,25))
+    for i in range(len(raw)):
+        keep=cv2.dilate(cv2.morphologyEx((raw[i]>0.5).astype(np.uint8),cv2.MORPH_OPEN,K),cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(15,15)))>0
+        _ys,_xs=np.nonzero(raw[i]>0.5)
+        if len(_xs): keep|=xx>=np.median(_xs)   # wisps only come off the sleeve; keep the straw on the right
+        raw[i]*=keep; obj_only[i]=raw[i]
+        obj=raw[i]>0.5
+        ys,xs=np.nonzero(obj)
+        if len(ys)==0: ramps.append(np.ones_like(raw[i])); continue
+        top=np.percentile(ys,2); cx=np.median(xs)
+        H_=raw.shape[1]
+        ramp=np.clip((yy-top)/(0.16*H_),0,1)**1.5*np.clip((cx-xx)/(0.08*raw.shape[2]),0,1)
+        ramps.append(ramp)
+        arm=np.clip((hum[i]-0.5)/0.3,0,1)*ramp
+        raw[i]=np.maximum(raw[i],arm)
 n=len(raw); H,W=raw.shape[1:]
 out=f'/tmp/seg/out_{clip}'; os.makedirs(out,exist_ok=True)
 # temporal median (3) to stop flicker
@@ -24,7 +47,7 @@ for i in range(n):
         keep=np.isin(lab,[j+1 for j,ar in enumerate(areas) if ar>=0.15*big])
         reach=cv2.dilate(keep.astype(np.uint8),np.ones((15,15),np.uint8))>0
         m=m*reach
-    if clip in ('sl','cf'):
+    if clip=='cf':
         # drop thin wisps (stray bits of forearm and the straw) so the cut-out stays one solid hand + glass
         core=cv2.morphologyEx((m>0.5).astype(np.uint8),cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(25,25)))
         m=m*(cv2.dilate(core,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(15,15)))>0)
@@ -35,9 +58,13 @@ for i in range(n):
     # edge-aware refinement guided by the frame
     g=guided(f, m.astype(np.float32), 3, 2e-3)
     m=np.clip((g-0.06)/0.9,0,1)
+    if ARM and i < len(ramps):
+        # outside the hand+glass the forearm fades softly upward (no hard slab edge, no floating wrist)
+        core=cv2.GaussianBlur(np.clip((obj_only[i]-0.3)/0.4,0,1),(0,0),3)
+        m=np.minimum(m,np.maximum(core,ramps[i]))
     alpha=(m*255).astype(np.uint8)
     # background with the subject removed (for the in-card window)
-    hole=cv2.dilate((m>0.06).astype(np.uint8),np.ones((13,13),np.uint8))
+    hole=cv2.dilate((m>(0.5 if ARM else 0.06)).astype(np.uint8),np.ones((13,13),np.uint8))
     small=cv2.resize(f,(W//2,H//2)); hs=cv2.resize(hole,(W//2,H//2),interpolation=cv2.INTER_NEAREST)
     bg=cv2.inpaint(small,hs,7,cv2.INPAINT_TELEA)
     bg=cv2.resize(cv2.GaussianBlur(bg,(0,0),1.2),(W,H))
