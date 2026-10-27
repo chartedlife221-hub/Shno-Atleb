@@ -3,10 +3,11 @@ import { translate } from '../lib/i18n.ts';
 import { formatPrice, mapUrl, orderText } from '../lib/misc.ts';
 import type { Lang, MenuItem } from '../lib/types.ts';
 import { createHandoff, type HandoffPlayer } from './handoff.ts';
+import { DATA_IS_DEMO } from '../data/items.ts';
 
 export interface OrderDialog {
   /** `from` = the rectangle the card should grow out of (the cup the visitor touched). */
-  open(item: MenuItem, lang: Lang, from?: DOMRect): void;
+  open(item: MenuItem, lang: Lang, from?: DOMRect, sourceTime?: number): void;
   readonly handoff: HandoffPlayer;
 }
 
@@ -50,6 +51,8 @@ export function setupDialog(copy: (text: string) => void): OrderDialog {
   dlg.addEventListener('close', () => {
     handoff.stop();
     card.classList.remove('is-scene', 'is-handoff', 'is-still');
+    card.style.removeProperty('min-height');
+    card.dataset['stage'] = '0';
   });
 
   /** Stage 1 entrance: the card grows out of the touched cup (FLIP). */
@@ -71,13 +74,15 @@ export function setupDialog(copy: (text: string) => void): OrderDialog {
 
   return {
     handoff,
-    open(item, lang, from) {
+    open(item, lang, from, sourceTime) {
+      if (dlg.open) return; // repeated taps never stack or restart the presentation
       current = { item, lang };
       nameEn.textContent = item.name.en;
       nameAr.textContent = item.name.ar;
       cafe.textContent = `${item.cafe[lang]} · ${translate(lang, `area_${item.area}`)}`;
       price.textContent = formatPrice(item.priceKwd, lang);
       map.href = mapUrl(item);
+      must('#dlg-demo', HTMLElement).hidden = !DATA_IS_DEMO;
       const has = handoff.has(item);
       note.textContent = has ? '' : translate(lang, 'noFootage');
       note.hidden = has;
@@ -86,10 +91,20 @@ export function setupDialog(copy: (text: string) => void): OrderDialog {
       card.classList.toggle('is-tall', handoff.tall(item));
       if (!dlg.open) dlg.showModal();
       if (from) growFrom(from);
+      card.dataset['stage'] = '1';
       handoff.play(item, card, (stage) => {
-        if (stage === 2) card.classList.add('is-scene');
+        card.dataset['stage'] = String(stage);
+        if (stage === 2) {
+          // grow from the card's current size (no shrink-then-grow when the text compacts)
+          card.style.setProperty('transition', 'none');
+          card.style.setProperty('min-height', `${card.getBoundingClientRect().height}px`);
+          card.classList.add('is-scene');
+          void card.offsetHeight;
+          card.style.removeProperty('transition');
+          requestAnimationFrame(() => card.style.removeProperty('min-height'));
+        }
         if (stage === 3) card.classList.add('is-handoff');
-      });
+      }, sourceTime);
     },
   };
 }

@@ -39,6 +39,9 @@ export const ar = {
   copyFail: 'ما قدرنا ننسخ، انسخه يدوياً',
   cupAria: 'كوب ورقي مكتوب عليه الطلب المقترح',
   takeIt: 'خذ طلبك',
+  demoTag: 'مثال',
+  demoMeta: 'بيانات تجريبية · السعر والترتيب غير مؤكدين',
+  demoDialog: 'مثال تجريبي: السعر غير مؤكد. تأكد من الكافيه.',
   noFootage: 'فيديو هالمشروب بالضبط قريباً، ما نعرض كوب غيره.',
   cupHint: 'المس الكوب',
   cupBtnAria: 'خذ الطلب من الباريستا',
@@ -54,8 +57,8 @@ export const ar = {
 
   // ticker + top 10
   tickerLabel: 'الأكثر طلباً هالأسبوع',
-  topTitle: 'أفضل ١٠ هالأسبوع',
-  topSub: 'طلبات الناس، مرتبة من الأعلى.',
+  topTitle: 'أفضل ١٠ (مثال)',
+  topSub: 'قائمة تجريبية لعرض الفكرة، مو ترتيب حقيقي. الأسماء والأسعار غير مؤكدة.',
 
   // browse
   browseTitle: 'كل الطلبات',
@@ -182,6 +185,9 @@ export const en: Record<Key, string> = {
   copyFail: "Couldn't copy. Please copy it by hand",
   cupAria: 'A paper cup with the suggested order written on it',
   takeIt: 'Take it',
+  demoTag: 'Sample',
+  demoMeta: 'Sample data · price and ranking not verified',
+  demoDialog: 'Sample entry: price not verified. Check with the café.',
   noFootage: 'Video of this exact drink is coming soon; we never show a different one.',
   cupHint: 'Touch the glass',
   cupBtnAria: 'Take the order from the barista',
@@ -195,8 +201,8 @@ export const en: Record<Key, string> = {
   shareText: '{name} from {cafe} ({area}): the exact order, via Shno Atleb',
 
   tickerLabel: 'Most ordered this week',
-  topTitle: 'This week’s Top 10',
-  topSub: 'What people order, ranked.',
+  topTitle: 'Top 10 (sample)',
+  topSub: 'A sample list to show the idea, not a real ranking. Names and prices are unverified.',
 
   browseTitle: 'All orders',
   browseSub: 'Filter by mood, area and budget.',

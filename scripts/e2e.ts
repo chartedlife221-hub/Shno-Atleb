@@ -57,13 +57,19 @@ check('shuffle changes the pick', names.size >= 3, [...names].join(' | '));
 await page.click('#moods button >> nth=2');
 check('mood chip is pressed', (await page.locator('#moods button[aria-pressed="true"]').count()) === 1);
 
-// dialog
+// dialog: the full three-stage hand-off on a drink that has footage
+for (let i = 0; i < 40 && (await page.getAttribute('#portal', 'data-clip')) === 'none'; i += 1) await page.click('#shuffle-btn');
+await page.waitForTimeout(1200);
+const heroBefore = await page.evaluate(() => (document.querySelector('video.is-on') as HTMLVideoElement).currentTime);
 await page.click('#cup-btn');
+await page.waitForTimeout(400);
+check('stage 0: touching the cup plays the real arm movement before the card opens', (await page.evaluate(() => (document.querySelector('video.is-on') as HTMLVideoElement).currentTime)) > heroBefore + 0.1);
 await page.waitForFunction(() => (document.getElementById('barista') as HTMLDialogElement).open, null, { timeout: 15000 }).catch(() => undefined);
 check('barista dialog opens', await page.locator('#barista').evaluate((d: HTMLDialogElement) => d.open));
 await page.waitForSelector('.barista__card.is-scene', { timeout: 5000 }).catch(() => undefined);
 check('the card opens onto the video scene', await page.locator('.barista__card.is-scene').count() === 1);
 const heroName = (await page.locator('#o-name').textContent()) ?? '';
+check('the card says it is sample data', await page.locator('#dlg-demo').isVisible());
 check('the card shows the order the visitor touched', ((await page.locator('#dlg-name-ar').textContent()) ?? '') === heroName || ((await page.locator('#dlg-name').textContent()) ?? '') === heroName);
 await page.waitForSelector('.barista__card.is-handoff', { timeout: 30000 }).catch(() => undefined);
 check('stage 3: the hand-off starts', await page.locator('.barista__card.is-handoff').count() === 1);
@@ -140,6 +146,81 @@ check('external links use noopener noreferrer', await page.evaluate(() => [...do
 const bare = await (await browser.newContext({ javaScriptEnabled: false })).newPage();
 await bare.goto(base);
 check('without JavaScript the page is already Arabic (no placeholders)', ((await bare.locator('#hero-title').textContent()) ?? '') === 'شنو أطلب؟' && !((await bare.locator('body').innerText()).includes('Sub')));
+
+// ---------- resilience: each scenario in a fresh phone-sized context ----------
+const phone = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 };
+async function openFilmed(p: import('playwright').Page): Promise<void> {
+  await p.goto(base);
+  await p.waitForSelector('body.is-ready');
+  for (let i = 0; i < 40 && (await p.getAttribute('#portal', 'data-clip')) === 'none'; i += 1) await p.click('#shuffle-btn');
+  await p.waitForTimeout(800);
+}
+const stageOf = (p: import('playwright').Page): Promise<string | null> => p.getAttribute('.barista__card', 'data-stage');
+
+{ // rapid taps: one presentation, no errors
+  const c = await browser.newContext(phone); const p = await c.newPage(); const errs: string[] = [];
+  p.on('pageerror', (e) => errs.push(e.message));
+  await openFilmed(p);
+  for (let i = 0; i < 6; i += 1) await p.locator('#cup-btn').tap({ force: true }).catch(() => undefined);
+  await p.waitForTimeout(2500);
+  check('rapid taps open the order once, without errors', (await p.locator('dialog[open]').count()) === 1 && errs.length === 0, errs.join(' | '));
+  await p.keyboard.press('Escape');
+  await p.waitForTimeout(300);
+  check('after closing, the cup can be touched again', await p.locator('#barista').evaluate((d: HTMLDialogElement) => !d.open));
+  await c.close();
+}
+{ // hand-off video fails to load: still images, never stuck
+  const c = await browser.newContext(phone); const p = await c.newPage();
+  await p.route(/handoff-[a-z]+\.(mp4|webm)$/, (r) => r.abort());
+  await openFilmed(p);
+  await p.locator('#cup-btn').tap();
+  await p.waitForFunction(() => document.querySelector('.barista__card')?.getAttribute('data-stage') === '3', null, { timeout: 8000 }).catch(() => undefined);
+  check('video failure: falls back to the still hand-off within seconds', (await stageOf(p)) === '3' && await p.locator('#ho-fg-img').isVisible());
+  await c.close();
+}
+{ // network offline after load: hero still works from its poster
+  const c = await browser.newContext(phone); const p = await c.newPage();
+  await openFilmed(p);
+  await c.setOffline(true);
+  await p.locator('#cup-btn').tap();
+  await p.waitForFunction(() => document.querySelector('.barista__card')?.getAttribute('data-stage') === '3', null, { timeout: 10000 }).catch(() => undefined);
+  check('offline: the order still opens and finishes', (await stageOf(p)) === '3' && ((await p.locator('#dlg-price').textContent()) ?? '').length > 2);
+  await c.close();
+}
+{ // reduced motion: no video is downloaded for the hand-off, still images instead
+  const c = await browser.newContext({ ...phone, reducedMotion: 'reduce' }); const p = await c.newPage(); const media: string[] = [];
+  p.on('request', (r) => { if (/handoff-[a-z]+\.(mp4|webm)$/.test(r.url())) media.push(r.url()); });
+  await openFilmed(p);
+  await p.locator('#cup-btn').tap();
+  await p.waitForTimeout(1200);
+  check('reduced motion: still hand-off, no hand-off video downloaded', (await stageOf(p)) === '3' && await p.locator('#ho-fg-img').isVisible() && media.length === 0, media.join(','));
+  await c.close();
+}
+{ // short phone screen, English LTR: everything important stays on screen
+  const c = await browser.newContext({ ...phone, viewport: { width: 360, height: 640 } }); const p = await c.newPage();
+  await openFilmed(p);
+  await p.click('#lang-btn');
+  check('English layout is LTR', (await p.getAttribute('html', 'dir')) === 'ltr');
+  await p.locator('#cup-btn').tap();
+  await p.waitForFunction(() => document.querySelector('.barista__card')?.getAttribute('data-stage') === '3', null, { timeout: 15000 }).catch(() => undefined);
+  const fits = await p.evaluate(() => ['#dlg-close', '#dlg-copy', '#dlg-name', '#dlg-price'].every((s) => {
+    const r = document.querySelector(s)!.getBoundingClientRect();
+    return r.width > 0 && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth;
+  }));
+  check('360x640: close, copy, name and price stay visible', fits);
+  check('English order name shown in the card', ((await p.locator('#dlg-name').textContent()) ?? '').length > 2);
+  await c.close();
+}
+const noGl = await chromium.launch({ args: ['--disable-webgl', '--disable-3d-apis'] });
+{ // no WebGL: still hand-off
+  const c = await noGl.newContext(phone); const p = await c.newPage();
+  await openFilmed(p);
+  await p.locator('#cup-btn').tap();
+  await p.waitForFunction(() => document.querySelector('.barista__card')?.getAttribute('data-stage') === '3', null, { timeout: 8000 }).catch(() => undefined);
+  check('no WebGL: still hand-off is shown', (await stageOf(p)) === '3' && await p.locator('#ho-fg-img').isVisible());
+  await c.close();
+}
+await noGl.close();
 
 await browser.close();
 server.stop();

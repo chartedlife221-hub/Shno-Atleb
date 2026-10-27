@@ -8,6 +8,9 @@ import type { MenuItem } from '../lib/types.ts';
  *  - topRank 1..10 is unique
  * Items older than 60 days are shown with a "needs recheck" tag automatically.
  */
+/** Every entry below is a placeholder. While true, the UI labels all items, prices and rankings as samples. */
+export const DATA_IS_DEMO = true;
+
 export const ITEMS: readonly MenuItem[] = [
   {
     id: "iced-vanilla-americano",

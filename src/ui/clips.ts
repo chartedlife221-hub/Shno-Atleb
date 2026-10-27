@@ -1,25 +1,30 @@
 import type { MenuItem } from '../lib/types.ts';
 
 /**
- * The two real clips of a hand offering a cup. Times are seconds into each clip.
- * idle = cup far away, barely moving; peak = the hand has brought the cup right up to the screen.
+ * The real footage behind the hero. Each hero file is a short trim of its source clip around the moment
+ * the visitor touches the cup. All times here are in *source-clip* seconds so the hero and the hand-off
+ * (cut from the same source) can hand over to each other on the same frame.
  */
 export interface Clip {
   readonly id: 'iced' | 'hot' | 'spanish' | 'frappe';
-  /** Native size of the clip; portrait clips are shown whole (contained) in landscape frames. */
+  /** Native size of the hero file; portrait clips are shown whole (contained) in landscape frames. */
   readonly w: number;
   readonly h: number;
-  readonly idle: readonly [number, number];
-  readonly peak: readonly [number, number];
-  /** Where the cup is horizontally (0..1 of the frame) at idle and at peak, to keep it in view when cropped. */
+  /** Source time at which the trimmed hero file starts. */
+  readonly start: number;
+  /** Source time of the resting pose (the poster frame): the hand holds the drink, about to move. */
+  readonly rest: number;
+  /** Seconds of real forward movement the hero plays when the visitor commits, before the order card opens. */
+  readonly lead: number;
+  /** Where the cup is horizontally (0..1) at rest and at the end of the lead, to keep it framed when cropped. */
   readonly cupX: readonly [number, number];
 }
 
 export const CLIPS: Record<Clip['id'], Clip> = {
-  iced: { id: 'iced', w: 678, h: 360, idle: [0.1, 3.2], peak: [7.4, 10.2], cupX: [0.5, 0.48] },
-  hot: { id: 'hot', w: 638, h: 342, idle: [7.65, 8.05], peak: [11.2, 12.4], cupX: [0.84, 0.41] },
-  frappe: { id: 'frappe', w: 540, h: 960, idle: [0.2, 1.2], peak: [4.6, 7.9], cupX: [0.45, 0.5] },
-  spanish: { id: 'spanish', w: 562, h: 1010, idle: [0.3, 2.2], peak: [5.0, 5.5], cupX: [0.45, 0.5] },
+  hot: { id: 'hot', w: 638, h: 342, start: 7.4, rest: 7.65, lead: 0.9, cupX: [0.84, 0.74] },
+  iced: { id: 'iced', w: 678, h: 360, start: 2.6, rest: 3.0, lead: 0.9, cupX: [0.5, 0.5] },
+  spanish: { id: 'spanish', w: 562, h: 1010, start: 2.0, rest: 2.3, lead: 0.9, cupX: [0.45, 0.47] },
+  frappe: { id: 'frappe', w: 540, h: 960, start: 0, rest: 0.3, lead: 0.9, cupX: [0.45, 0.47] },
 };
 
 /**
@@ -47,6 +52,8 @@ export interface Handoff {
   readonly w: number;
   readonly h: number;
   readonly pad: number;
+  /** Source time of this file's first frame (hand-off time = source time - offset). */
+  readonly offset: number;
   /** When the hand has brought the cup right up to the screen, and the window it then breathes in. */
   readonly peak: readonly [number, number];
   /** Where the cup is horizontally (0..1) at the start and at the peak. */
@@ -64,10 +71,10 @@ export interface Handoff {
 }
 
 export const HANDOFFS: Record<Clip['id'], Handoff> = {
-  hot: { id: 'hot', w: 638, h: 342, pad: 8, peak: [4.3, 5.75], cupX: [0.84, 0.41], anchor: [0.62, 0.18], top: [0.3, 0.12], cupY: [0.45, 0.45], feather: [0.03, 0.1, 0.1, 0.05] },
-  iced: { id: 'iced', w: 678, h: 360, pad: 8, peak: [4.45, 7.2], cupX: [0.5, 0.48], anchor: [0.5, 0.2], top: [0.22, 0.02], cupY: [0.45, 0.45], feather: [0.04, 0.04, 0.05, 0.1] },
-  frappe: { id: 'frappe', w: 540, h: 960, pad: 8, peak: [4.6, 7.9], cupX: [0.45, 0.55], anchor: [0.5, 0.35], top: [0.24, 0.2], cupY: [0.55, 0.55], feather: [0.2, 0.03, 0.05, 0.03] },
-  spanish: { id: 'spanish', w: 610, h: 1058, pad: 8, trim: 24, peak: [2.95, 7.5], cupX: [0.45, 0.5], anchor: [0.5, 0.3], top: [0.32, 0.1], cupY: [0.6, 0.55], feather: [0.08, 0.03, 0.05, 0.04] },
+  hot: { id: 'hot', w: 638, h: 342, pad: 8, offset: 165 / 23.976, peak: [4.3, 5.75], cupX: [0.84, 0.41], anchor: [0.62, 0.18], top: [0.3, 0.12], cupY: [0.45, 0.45], feather: [0.03, 0.1, 0.1, 0.05] },
+  iced: { id: 'iced', w: 678, h: 360, pad: 8, offset: 70 / 23.976, peak: [4.45, 7.2], cupX: [0.5, 0.48], anchor: [0.5, 0.2], top: [0.22, 0.02], cupY: [0.45, 0.45], feather: [0.04, 0.04, 0.05, 0.1] },
+  frappe: { id: 'frappe', w: 540, h: 960, pad: 8, offset: 0, peak: [4.6, 7.9], cupX: [0.45, 0.55], anchor: [0.5, 0.35], top: [0.24, 0.2], cupY: [0.55, 0.55], feather: [0.2, 0.03, 0.05, 0.03] },
+  spanish: { id: 'spanish', w: 610, h: 1058, pad: 8, offset: 50 / 23.976, trim: 24, peak: [2.95, 7.5], cupX: [0.45, 0.5], anchor: [0.5, 0.3], top: [0.32, 0.1], cupY: [0.6, 0.55], feather: [0.08, 0.03, 0.05, 0.04] },
 };
 
 export function handoffSource(id: Clip['id']): string {
@@ -84,15 +91,14 @@ export function sourceFor(id: Clip['id']): string {
 
 export const clamp = (v: number, a: number, b: number): number => Math.min(b, Math.max(a, v));
 
-/** 0 at the idle pose, 1 once the cup has arrived. */
-export function progressAt(clip: Clip, t: number): number {
-  return clamp((t - clip.idle[1]) / (clip.peak[0] - clip.idle[1]), 0, 1);
+/** Where the hand-off should begin so it continues the hero's movement (at least 1.2 s of approach left). */
+export function handoffStart(h: Handoff, sourceTime: number): number {
+  return clamp(sourceTime - h.offset, 0, Math.max(0, h.peak[0] - 1.2));
 }
 
-/** object-position that keeps the moving cup centred when the frame is cropped to `aspect` (width / height). */
-export function focusAt(clip: Clip, t: number, aspect: number): string {
-  const p = progressAt(clip, t);
-  const cx = clip.cupX[0] + (clip.cupX[1] - clip.cupX[0]) * p;
+/** object-position that keeps the cup framed when the hero is cropped to `aspect`; `p` = 0 at rest, 1 after the lead. */
+export function focusAt(clip: Clip, p: number, aspect: number): string {
+  const cx = clip.cupX[0] + (clip.cupX[1] - clip.cupX[0]) * clamp(p, 0, 1);
   const visible = Math.min(1, aspect / (clip.w / clip.h));
   const pos = visible >= 1 ? 0.5 : clamp((cx - visible / 2) / (1 - visible), 0, 1);
   return `${(pos * 100).toFixed(1)}% 45%`;

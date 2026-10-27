@@ -1,5 +1,5 @@
 import type { MenuItem } from '../lib/types.ts';
-import { clamp, clipFor, HANDOFFS, handoffSource, lowData, type Handoff } from './clips.ts';
+import { clamp, clipFor, HANDOFFS, handoffSource, handoffStart, lowData, type Handoff } from './clips.ts';
 
 /**
  * Stage 3 of the order: a real hand holding the ordered drink comes out of the order card.
@@ -17,7 +17,7 @@ export interface HandoffPlayer {
   /** True when this drink's footage is portrait (the card becomes tall). */
   tall(item: MenuItem): boolean;
   /** Starts stage 2 (window) and then stage 3 (hand-off) inside `card`. */
-  play(item: MenuItem, card: HTMLElement, onStage: (stage: 2 | 3) => void): void;
+  play(item: MenuItem, card: HTMLElement, onStage: (stage: 2 | 3) => void, sourceTime?: number): void;
   stop(): void;
 }
 
@@ -126,13 +126,17 @@ export function createHandoff(els: {
   let stage: 0 | 2 | 3 = 0;
   let t = 0;
   let breath = 0;
+  let t0 = 0;
+  let stalledFor = 0;
+  let lastT = -1;
+  let fallen = false;
   let lastKey = '';
   let fade = 0;
   let last = 0;
   let timers: number[] = [];
 
   const load = (h: Handoff): void => {
-    if (loadedId === h.id || lowData()) return;
+    if (loadedId === h.id || still()) return; // still mode never downloads the video
     loadedId = h.id;
     els.video.src = handoffSource(h.id);
     els.video.load();
@@ -164,7 +168,7 @@ export function createHandoff(els: {
 
   /** The cut-out: grows from its anchor and drops toward the viewer as the hand comes forward. */
   const fgRect = (h: Handoff, b: Rect, p: number, clearOf: number): Rect => {
-    const k = 1 + (h.h > h.w ? 0.16 : small.matches ? 0.2 : 0.28) * p;
+    const k = 1 + (h.h > h.w ? 0.1 : small.matches ? 0.12 : 0.18) * p;
     const ax = b.x + h.anchor[0] * b.w;
     const ay = b.y + h.anchor[1] * b.h;
     const r = { x: ax + (b.x - ax) * k, y: ay + (b.y - ay) * k, w: b.w * k, h: b.h * k };
@@ -174,7 +178,7 @@ export function createHandoff(els: {
     return r;
   };
 
-  const progress = (h: Handoff): number => smooth(clamp(t / h.peak[0], 0, 1));
+  const progress = (h: Handoff): number => smooth(clamp((t - t0) / Math.max(0.1, h.peak[0] - t0), 0, 1));
 
   const sizeCanvases = (c: DOMRect): void => {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -214,7 +218,7 @@ export function createHandoff(els: {
     // 1) soft contact shadow, a little lower and wider, darker as the drink comes closer
     g.uniform1f(gl.u('uMode'), 1);
     g.uniform1f(gl.u('uBlur'), 0.012 + 0.01 * p);
-    g.uniform1f(gl.u('uOpacity'), fade * (0.18 + 0.32 * p));
+    g.uniform1f(gl.u('uOpacity'), fade * (0.1 + 0.18 * p));
     quad({ x: r.x - r.w * 0.01, y: r.y + r.h * (0.02 + 0.05 * p), w: r.w * 1.02, h: r.h });
     g.drawArrays(g.TRIANGLE_STRIP, 0, 4);
     // 2) the hand and the drink
@@ -230,13 +234,16 @@ export function createHandoff(els: {
     last = now;
     const h = clip;
     const v = els.video;
+    if (stage >= 2) fade = Math.min(1, fade + dt / 0.8); // the hand appears with the window, where the hero left it
     if (stage === 3) {
-      fade = Math.min(1, fade + dt / 0.35);
-      // the real movement of the arm plays at its natural speed and stops when the drink is offered
-      if (v.currentTime < h.peak[0]) {
-        if (v.paused && v.readyState >= 2) v.play().catch(() => undefined);
+      // the real movement of the arm plays at its natural speed, then the hand settles and holds the drink
+      if (v.currentTime < h.peak[1] - 0.05 && !v.ended) {
+        if (v.paused && v.readyState >= 2) v.play().catch(() => fallBack('play-rejected'));
+        stalledFor = Math.abs(v.currentTime - lastT) < 0.001 ? stalledFor + dt : 0;
+        if (stalledFor > 2.5) { fallBack('stalled'); return; } // stalled playback: finish with the still
       } else if (!v.paused) v.pause();
-      breath += dt;
+      lastT = v.currentTime;
+      if (v.currentTime >= h.peak[0]) breath += dt;
     }
     t = v.currentTime;
     const c = card.getBoundingClientRect();
@@ -250,7 +257,7 @@ export function createHandoff(els: {
     drawBg(h, c, b);
     const f = subjectRect(b, c);
     // once offered, the hand keeps "holding" it: a slow, small float so it never freezes
-    const sway = p * Math.sin(breath * 1.6) * 0.006;
+    const sway = Math.min(1, breath) * Math.sin(breath * 1.3) * 0.004;
     const tb = els.text.getBoundingClientRect();
     const r = fgRect(h, f, p, tb.bottom + 10);
     drawFg(h, { x: r.x - r.w * sway, y: r.y - r.h * sway * 1.5, w: r.w * (1 + 2 * sway), h: r.h * (1 + 2 * sway) }, p);
@@ -263,6 +270,7 @@ export function createHandoff(els: {
   /** Reduced motion, data saver or no WebGL: still images in the final pose, same layout. */
   const placeStill = (): void => {
     if (!clip || !card) return;
+    if (gl) { gl.gl.clearColor(0, 0, 0, 0); gl.gl.clear(gl.gl.COLOR_BUFFER_BIT); }
     const c = card.getBoundingClientRect();
     const b = baseRect(clip, c, 1);
     const r = fgRect(clip, subjectRect(b, c), 1, els.text.getBoundingClientRect().bottom + 10);
@@ -278,6 +286,19 @@ export function createHandoff(els: {
     els.fgImg.hidden = false;
   };
 
+  /** Video failed, stalled, never became ready, or WebGL was lost: show the same moment as still images. */
+  let onFall: (() => void) | null = null;
+  const fallBack = (why = 'error'): void => {
+    if (fallen || !clip) return;
+    els.fg.dataset['fallback'] = why;
+    fallen = true;
+    running = false;
+    els.video.pause();
+    onFall?.();
+  };
+  els.video.addEventListener('error', () => { if (running) fallBack('media-error'); });
+  els.fg.addEventListener('webglcontextlost', (e) => { e.preventDefault(); fallBack('context-lost'); });
+
   const clear = (): void => {
     for (const id of timers) window.clearTimeout(id);
     timers = [];
@@ -290,44 +311,61 @@ export function createHandoff(els: {
       const c = clipFor(item);
       if (c) load(HANDOFFS[c.id]);
     },
-    play(item, el, onStage) {
+    play(item, el, onStage, sourceTime) {
       clear();
       const c = clipFor(item);
       card = el;
       clip = c ? HANDOFFS[c.id] : null;
       stage = 0;
-      t = 0;
       breath = 0;
       lastKey = '';
       fade = 0;
+      fallen = false;
+      delete els.fg.dataset['fallback'];
+      stalledFor = 0;
+      lastT = -1;
       els.video.pause();
-      if (els.video.readyState >= 1) els.video.currentTime = 0;
       els.bgImg.hidden = true;
       els.fgImg.hidden = true;
+      const at = (ms: number, fn: () => void): void => { timers.push(window.setTimeout(fn, calm.matches ? Math.min(ms, 150) : ms)); };
       if (!clip) {
         // no footage of this exact drink: the window shows the empty café counter, never another cup
         els.bgImg.src = './media/cafe.jpg';
         for (const [k, v] of [['left', '0'], ['top', '0'], ['width', '100%'], ['height', '100%']] as const) els.bgImg.style.setProperty(k, v);
         els.bgImg.hidden = false;
-        timers.push(window.setTimeout(() => onStage(2), calm.matches ? 100 : 750));
+        at(700, () => onStage(2));
         return;
       }
-      if (still()) {
-        timers.push(window.setTimeout(() => { onStage(2); }, calm.matches ? 100 : 750));
-        timers.push(window.setTimeout(() => { onStage(3); placeStill(); }, calm.matches ? 150 : 1700));
-        return;
-      }
-      load(clip);
+      const h = clip;
+      t0 = handoffStart(h, sourceTime ?? h.offset);
+      t = t0;
+      const stillPath = (): void => {
+        at(700, () => onStage(2));
+        at(1400, () => { onStage(3); placeStill(); });
+      };
+      onFall = () => { if (stage < 3) { stage = 3; onStage(3); } placeStill(); };
+      if (still()) { stillPath(); return; }
+      load(h);
+      const v = els.video;
+      const seekTo = (): void => { if (Math.abs(v.currentTime - t0) > 0.03) v.currentTime = t0; };
+      if (v.readyState >= 1) seekTo();
+      else v.addEventListener('loadedmetadata', seekTo, { once: true });
       running = true;
       last = performance.now();
       requestAnimationFrame(frame);
-      const go2 = (): void => { stage = 2; onStage(2); timers.push(window.setTimeout(() => { stage = 3; onStage(3); }, 750)); };
-      const ready = (): boolean => els.video.readyState >= 2;
-      timers.push(window.setTimeout(function wait(): void {
-        if (!running) return;
-        if (ready()) go2();
-        else timers.push(window.setTimeout(wait, 120));
-      }, 700));
+      // Stage A (order) -> B (window, the hand where the hero left it) -> C (the hand comes forward)
+      const ready = (): boolean => v.readyState >= 2 && !v.seeking && Math.abs(v.currentTime - t0) < 0.1;
+      const started = performance.now();
+      const waitB = (): void => {
+        if (!running || fallen) return;
+        if (ready()) {
+          stage = 2;
+          onStage(2);
+          at(800, () => { if (!fallen) { stage = 3; onStage(3); } });
+        } else if (performance.now() - started > 2600) fallBack('timeout'); // never wait forever for media
+        else timers.push(window.setTimeout(waitB, 100));
+      };
+      at(650, waitB);
     },
     stop() {
       clear();

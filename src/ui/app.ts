@@ -98,8 +98,6 @@ export function startApp(): void {
     if (!item) return;
     offerStage.setItem(item);
     paintOrder(item);
-    if (document.readyState === 'complete') dialog.handoff.preload(item);
-    else window.addEventListener('load', () => dialog.handoff.preload(item), { once: true });
     if (announce) say(t('pickAnnounce', { name: item.name[state.lang], cafe: item.cafe[state.lang], price: formatPrice(item.priceKwd, state.lang) }));
   }
   function shuffle(): void {
@@ -109,8 +107,9 @@ export function startApp(): void {
   const takeIt = (): void => {
     const item = state.current;
     if (!item) return;
-    offerStage.lean(true);
-    dialog.open(item, state.lang, portal.getBoundingClientRect());
+    dialog.handoff.preload(item);
+    // the real arm starts moving toward the visitor; the order card continues that same movement
+    offerStage.offer((sourceTime) => dialog.open(item, state.lang, portal.getBoundingClientRect(), sourceTime));
   };
   must('#show-btn', HTMLButtonElement).addEventListener('click', takeIt);
   must('#cup-btn', HTMLButtonElement).addEventListener('click', takeIt);
@@ -123,6 +122,11 @@ export function startApp(): void {
   const coarse = window.matchMedia('(pointer: coarse)');
   must('#cup-btn', HTMLButtonElement).addEventListener('pointerenter', () => { if (!coarse.matches) offerStage.lean(true); });
   must('#cup-btn', HTMLButtonElement).addEventListener('focus', () => offerStage.lean(true));
+  // intent (hover, touch-down, focus) is when the heavier hand-off clip starts loading, not on page load
+  for (const type of ['pointerenter', 'pointerdown', 'focus'] as const) {
+    must('#cup-btn', HTMLButtonElement).addEventListener(type, () => { if (state.current) dialog.handoff.preload(state.current); });
+  }
+  must('#cup-btn', HTMLButtonElement).addEventListener('pointerdown', () => offerStage.lean(true));
   must('#cup-btn', HTMLButtonElement).addEventListener('blur', () => offerStage.lean(false));
   must('#copy-btn', HTMLButtonElement).addEventListener('click', () => state.current && actions.copy(state.current));
 
@@ -240,6 +244,9 @@ export function startApp(): void {
   scrollSpy();
   // the wall's leaves sway only while the hero is on screen
   const env = document.querySelector('.env');
+  const light = (): void => { window.setTimeout(() => env?.classList.add('is-lit'), 300); };
+  if (document.readyState === 'complete') light();
+  else window.addEventListener('load', light, { once: true });
   if (env && typeof IntersectionObserver !== 'undefined') {
     new IntersectionObserver((entries) => env.classList.toggle('is-still', !entries.some((e) => e.isIntersecting))).observe(must('#pick', HTMLElement));
   }
