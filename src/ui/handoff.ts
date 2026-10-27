@@ -14,6 +14,8 @@ export interface HandoffPlayer {
   preload(item: MenuItem): void;
   /** True when this drink has matching footage. */
   has(item: MenuItem): boolean;
+  /** True when this drink's footage is portrait (the card becomes tall). */
+  tall(item: MenuItem): boolean;
   /** Starts stage 2 (window) and then stage 3 (hand-off) inside `card`. */
   play(item: MenuItem, card: HTMLElement, onStage: (stage: 2 | 3) => void): void;
   stop(): void;
@@ -144,12 +146,15 @@ export function createHandoff(els: {
     const visible = Math.min(1, c.width / w);
     const cx = h.cupX[0] + (h.cupX[1] - h.cupX[0]) * p;
     const pos = visible >= 1 ? 0.5 : clamp((cx - visible / 2) / (1 - visible), 0, 1);
-    return { x: c.left + (c.width - w) * pos, y: c.top + (c.height - hh) * 0.45, w, h: hh };
+    const visY = Math.min(1, c.height / hh);
+    const cy = h.cupY[0] + (h.cupY[1] - h.cupY[0]) * p;
+    const posY = visY >= 1 ? 0.45 : clamp((cy - visY / 2) / (1 - visY), 0, 1);
+    return { x: c.left + (c.width - w) * pos, y: c.top + (c.height - hh) * posY, w, h: hh };
   };
 
   /** On narrow (portrait) cards the cover crop makes the drink huge: present it a little smaller, bottom-aligned. */
   const subjectRect = (b: Rect, c: DOMRect): Rect => {
-    const f = small.matches ? 0.78 : 1;
+    const f = !small.matches ? 1 : clip && clip.h > clip.w ? 0.96 : 0.78;
     if (f === 1) return b;
     const w = b.w * f;
     const hh = b.h * f;
@@ -159,7 +164,7 @@ export function createHandoff(els: {
 
   /** The cut-out: grows from its anchor and drops toward the viewer as the hand comes forward. */
   const fgRect = (h: Handoff, b: Rect, p: number, clearOf: number): Rect => {
-    const k = 1 + (small.matches ? 0.2 : 0.28) * p;
+    const k = 1 + (h.h > h.w ? 0.16 : small.matches ? 0.2 : 0.28) * p;
     const ax = b.x + h.anchor[0] * b.w;
     const ay = b.y + h.anchor[1] * b.h;
     const r = { x: ax + (b.x - ax) * k, y: ay + (b.y - ay) * k, w: b.w * k, h: b.h * k };
@@ -185,7 +190,8 @@ export function createHandoff(els: {
     if (!ctx || els.video.readyState < 2) return;
     const sx = els.bg.width / c.width;
     ctx.clearRect(0, 0, els.bg.width, els.bg.height);
-    ctx.drawImage(els.video, 0, 2 * h.h + 2 * h.pad, h.w, h.h, (b.x - c.left) * sx, (b.y - c.top) * sx, b.w * sx, b.h * sx);
+    const tr = h.trim ?? 0;
+    ctx.drawImage(els.video, tr, 2 * h.h + 2 * h.pad + tr, h.w - 2 * tr, h.h - 2 * tr, (b.x - c.left) * sx, (b.y - c.top) * sx, b.w * sx, b.h * sx);
   };
 
   const drawFg = (h: Handoff, r: Rect, p: number): void => {
@@ -201,8 +207,7 @@ export function createHandoff(els: {
     const total = 3 * h.h + 2 * h.pad;
     g.uniform1f(gl.u('uPaneH'), h.h / total);
     g.uniform1f(gl.u('uAlphaY'), (h.h + h.pad) / total);
-    const feather = h.id === 'hot' ? [0.03, 0.1, 0.1, 0.05] : [0.04, 0.04, 0.05, 0.1];
-    g.uniform4f(gl.u('uFeather'), feather[0] ?? 0, feather[1] ?? 0, feather[2] ?? 0, feather[3] ?? 0);
+    g.uniform4f(gl.u('uFeather'), h.feather[0], h.feather[1], h.feather[2], h.feather[3]);
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const quad = (q: Rect): void => g.uniform4f(gl.u('uRect'), (q.x / vw) * 2 - 1, 1 - (q.y / vh) * 2, (q.w / vw) * 2, -(q.h / vh) * 2);
@@ -280,6 +285,7 @@ export function createHandoff(els: {
 
   return {
     has: (item) => clipFor(item) !== null,
+    tall: (item) => { const c = clipFor(item); return c !== null && HANDOFFS[c.id].h > HANDOFFS[c.id].w; },
     preload(item) {
       const c = clipFor(item);
       if (c) load(HANDOFFS[c.id]);

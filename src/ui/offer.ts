@@ -56,6 +56,11 @@ export function createOffer(portal: HTMLElement, videos: Record<Clip['id'], HTML
     for (const key of Object.keys(videos) as Clip['id'][]) videos[key].classList.toggle('is-on', key === id);
     if (id === null && !plate.src) plate.src = './media/cafe.jpg';
     plate.classList.toggle('is-on', id === null);
+    // portrait footage is shown whole, over a soft blurred copy of itself
+    const tall = id !== null && CLIPS[id].h > CLIPS[id].w;
+    portal.classList.toggle('is-tall', tall);
+    const backdrop = portal.querySelector('.portal__backdrop');
+    if (tall && id && backdrop instanceof HTMLImageElement) backdrop.src = `./media/poster-${id}.jpg`;
   };
 
   const seek = (): void => {
@@ -110,7 +115,7 @@ export function createOffer(portal: HTMLElement, videos: Record<Clip['id'], HTML
       done = null;
       window.setTimeout(() => cb?.(), 350);
     }
-    portal.style.setProperty('--focus', focusAt(clip, t, portal.clientWidth / Math.max(1, portal.clientHeight)));
+    if (clip.h <= clip.w) portal.style.setProperty('--focus', focusAt(clip, t, portal.clientWidth / Math.max(1, portal.clientHeight)));
     applyPose(dt);
   };
 

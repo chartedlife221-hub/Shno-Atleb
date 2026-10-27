@@ -83,6 +83,7 @@ export function setupDialog(copy: (text: string) => void): OrderDialog {
       note.hidden = has;
       card.classList.remove('is-scene', 'is-handoff', 'is-still');
       card.classList.toggle('has-footage', has);
+      card.classList.toggle('is-tall', handoff.tall(item));
       if (!dlg.open) dlg.showModal();
       if (from) growFrom(from);
       handoff.play(item, card, (stage) => {

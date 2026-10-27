@@ -158,6 +158,9 @@ main:focus { outline: none; }
   box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 calc(22px + 60px * var(--depth)) calc(40px + 70px * var(--depth)) calc(-26px - 4px * var(--depth)) rgba(30, 18, 8, .6), 0 4px 14px rgba(30, 18, 8, .25); }
 .portal__video { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; transform: translateZ(0); object-fit: cover; object-position: var(--focus, 50% 50%); opacity: 0; transition: opacity .6s; background: #2a1c14; }
 .portal__video.is-on { opacity: 1; }
+.portal__backdrop { position: absolute; inset: -8%; width: 116%; height: 116%; max-width: none; object-fit: cover; filter: blur(22px) saturate(1.1) brightness(.85); opacity: 0; transition: opacity .6s; }
+.portal.is-tall .portal__backdrop { opacity: 1; }
+.portal.is-tall .portal__video { object-fit: contain; object-position: 50% 50%; background: transparent; }
 .portal__grade { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: radial-gradient(120% 95% at 50% 42%, transparent 52%, rgba(24, 12, 4, .42)), linear-gradient(118deg, rgba(255, 255, 255, .2), transparent 26%), linear-gradient(180deg, rgba(255, 226, 180, .08), transparent 45%);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18), inset 0 -40px 60px -40px rgba(20, 10, 4, .5); }
@@ -275,7 +278,9 @@ main:focus { outline: none; }
   box-shadow: 0 1px 0 #fff inset, 0 30px 60px -30px rgba(30, 18, 10, .6);
   transition: width .9s cubic-bezier(.2, .8, .2, 1), min-height .9s cubic-bezier(.2, .8, .2, 1), color .6s, box-shadow .9s, padding .9s; }
 .barista__card::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: linear-gradient(145deg, rgba(255, 255, 255, .8), rgba(255, 255, 255, .48)); backdrop-filter: blur(30px) saturate(1.5); -webkit-backdrop-filter: blur(30px) saturate(1.5); transition: opacity .9s; }
-.barista__card.is-scene { width: min(52rem, 100%); min-height: min(58dvh, 33rem); padding-block: 1.1rem; color: #fff; box-shadow: 0 1px 0 rgba(255, 255, 255, .45) inset, 0 50px 100px -30px rgba(0, 0, 0, .85); }
+.barista__card.is-scene { width: min(52rem, 100%); min-height: min(58dvh, 33rem); }
+.barista__card.is-scene.is-tall { width: min(30rem, 100%); min-height: min(70dvh, 44rem); }
+.barista__card.is-scene { padding-block: 1.1rem; color: #fff; box-shadow: 0 1px 0 rgba(255, 255, 255, .45) inset, 0 50px 100px -30px rgba(0, 0, 0, .85); }
 .barista__card.is-scene::before { opacity: 0; }
 .barista__scene { position: absolute; inset: 0; z-index: -2; border-radius: inherit; overflow: hidden; background: #2a1c14; opacity: 0; transition: opacity 1s ease .1s; }
 .is-scene .barista__scene { opacity: 1; }

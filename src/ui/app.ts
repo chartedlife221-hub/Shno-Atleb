@@ -35,7 +35,7 @@ export function startApp(): void {
   const status = must('#status', HTMLElement);
   const stage = must('#stage', HTMLElement);
   const portal = must('#portal', HTMLElement);
-  const offerStage = createOffer(portal, { iced: must('#v-iced', HTMLVideoElement), hot: must('#v-hot', HTMLVideoElement) }, stage, must('#hero-plate', HTMLImageElement));
+  const offerStage = createOffer(portal, { iced: must('#v-iced', HTMLVideoElement), hot: must('#v-hot', HTMLVideoElement), spanish: must('#v-spanish', HTMLVideoElement) }, stage, must('#hero-plate', HTMLImageElement));
   const order = must('#order', HTMLElement);
   const paintOrder = (item: MenuItem): void => {
     must('#o-name', HTMLElement).textContent = item.name[state.lang];
