@@ -158,7 +158,7 @@ export function createHandoff(els: {
 
   /** On narrow (portrait) cards the cover crop makes the drink huge: present it a little smaller, bottom-aligned. */
   const subjectRect = (b: Rect, c: DOMRect): Rect => {
-    const f = !small.matches ? 1 : clip && clip.h > clip.w ? 0.96 : 0.78;
+    const f = !small.matches ? 1 : clip?.phone ?? (clip && clip.h > clip.w ? 0.96 : 0.78);
     if (f === 1) return b;
     const w = b.w * f;
     const hh = b.h * f;
@@ -347,6 +347,8 @@ export function createHandoff(els: {
       if (still()) { stillPath(); return; }
       load(h);
       const v = els.video;
+      v.playbackRate = h.rate ?? 1;
+      v.defaultPlaybackRate = h.rate ?? 1;
       const seekTo = (): void => { if (Math.abs(v.currentTime - t0) > 0.03) v.currentTime = t0; };
       if (v.readyState >= 1) seekTo();
       else v.addEventListener('loadedmetadata', seekTo, { once: true });

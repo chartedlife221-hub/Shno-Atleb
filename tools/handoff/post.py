@@ -3,7 +3,8 @@ clip=sys.argv[1]; a=int(sys.argv[2])
 fr=np.load(f'{clip}.npy',mmap_mode='r')
 raw=np.load(f'{clip}_raw.npy').astype(np.float32)/255.
 import os
-ARM = os.path.exists(f'{clip}_human.npy') and clip=='sl'
+ARM = os.path.exists(f'{clip}_human.npy') and clip in ('sl','rose')
+BOTH = clip=='rose'  # two hands hold the cup: forearms on both sides fade upward toward the body
 if ARM:
     hum=np.load(f'{clip}_human.npy').astype(np.float32)/255.
     obj_only=raw.copy(); ramps=[]
@@ -12,16 +13,27 @@ if ARM:
     yy,xx=np.mgrid[0:raw.shape[1],0:raw.shape[2]]
     K=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(25,25))
     for i in range(len(raw)):
-        keep=cv2.dilate(cv2.morphologyEx((raw[i]>0.5).astype(np.uint8),cv2.MORPH_OPEN,K),cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(15,15)))>0
-        _ys,_xs=np.nonzero(raw[i]>0.5)
-        if len(_xs): keep|=xx>=np.median(_xs)   # wisps only come off the sleeve; keep the straw on the right
-        raw[i]*=keep; obj_only[i]=raw[i]
+        if not BOTH:
+            keep=cv2.dilate(cv2.morphologyEx((raw[i]>0.5).astype(np.uint8),cv2.MORPH_OPEN,K),cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(15,15)))>0
+            _ys,_xs=np.nonzero(raw[i]>0.5)
+            if len(_xs): keep|=xx>=np.median(_xs)   # wisps only come off the sleeve; keep the straw on the right
+            raw[i]*=keep
+        obj_only[i]=raw[i]
         obj=raw[i]>0.5
         ys,xs=np.nonzero(obj)
         if len(ys)==0: ramps.append(np.ones_like(raw[i])); continue
         top=np.percentile(ys,2); cx=np.median(xs)
         H_=raw.shape[1]
-        ramp=np.clip((yy-top)/(0.16*H_),0,1)**1.5*np.clip((cx-xx)/(0.08*raw.shape[2]),0,1)
+        if BOTH:
+            bottom=np.percentile(ys,99); x0,x1=np.percentile(xs,[1,99]); w_=x1-x0
+            # hands sit around the cup's rim: keep them fully, fade the forearms higher up,
+            # and never take the barista's torso above the middle of the cup
+            ramp=np.clip((yy-(top-0.24*H_))/(0.18*H_),0,1)**1.3*(yy<=bottom+0.03*H_)
+            torso=((yy<top+0.02*H_)&(xx>cx-0.3*w_)&(xx<cx+0.3*w_)).astype(np.float32)
+            torso=cv2.GaussianBlur(torso,(0,0),0.035*raw.shape[2])
+            ramp=ramp*(1-np.clip(torso*1.6,0,1))
+        else:
+            ramp=np.clip((yy-top)/(0.16*H_),0,1)**1.5*np.clip((cx-xx)/(0.08*raw.shape[2]),0,1)
         ramps.append(ramp)
         arm=np.clip((hum[i]-0.5)/0.3,0,1)*ramp
         raw[i]=np.maximum(raw[i],arm)

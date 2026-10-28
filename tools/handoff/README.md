@@ -13,4 +13,6 @@ How `public/media/handoff-*.{mp4,webm}` were made from the source clips. Not par
 
 Spanish latte: `human.py` adds the forearm (U²-Net human) so the wrist continues into the arm and fades softly instead of ending in a cut.
 
+Rose latte: `masks_rose.py` (ISNet + U²-Net human); both hands kept, forearms fade upward, torso above the cup excluded; played at 1.5×.
+
 Frames used: hot 165–300, iced 70–245, Spanish latte 50–235, caramel frappuccino 0–191 at 540×960 (23.976 fps; thin wisps removed, 24 px black border trimmed). Peak times are in `src/ui/clips.ts`.
