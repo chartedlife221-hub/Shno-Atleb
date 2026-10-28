@@ -22,6 +22,10 @@ describe('footage always matches the ordered drink', () => {
     for (const it of ITEMS) if (clipFor(it)?.id === 'rose') expect(it.id).toBe('rose-latte');
     expect(clipFor(ITEMS.find((i) => i.id === 'rose-latte')!)?.id).toBe('rose');
   });
+  it('uses the cinnamon latte cup only for the Honey Cinnamon Latte', () => {
+    for (const it of ITEMS) if (clipFor(it)?.id === 'honey') expect(it.id).toBe('honey-cinnamon-latte');
+    expect(clipFor(ITEMS.find((i) => i.id === 'honey-cinnamon-latte')!)?.id).toBe('honey');
+  });
   it('uses the white takeaway cup only for hot drinks, never for iced drinks or desserts', () => {
     for (const it of ITEMS) {
       if (clipFor(it)?.id !== 'hot') continue;

@@ -3,8 +3,8 @@ clip=sys.argv[1]; a=int(sys.argv[2])
 fr=np.load(f'{clip}.npy',mmap_mode='r')
 raw=np.load(f'{clip}_raw.npy').astype(np.float32)/255.
 import os
-ARM = os.path.exists(f'{clip}_human.npy') and clip in ('sl','rose')
-BOTH = clip=='rose'  # two hands hold the cup: forearms on both sides fade upward toward the body
+ARM = os.path.exists(f'{clip}_human.npy') and clip in ('sl','rose','honey')
+BOTH = clip in ('rose','honey')  # two hands hold the cup: forearms on both sides fade upward toward the body
 if ARM:
     hum=np.load(f'{clip}_human.npy').astype(np.float32)/255.
     obj_only=raw.copy(); ramps=[]
@@ -20,6 +20,11 @@ if ARM:
             raw[i]*=keep
         obj_only[i]=raw[i]
         obj=raw[i]>0.5
+        if clip=='honey':
+            # the salient-object model also takes the barista's body here: locate the white cup by colour instead
+            f_=np.array(fr[a+i]).astype(int); cup=(f_.min(2)>170)&((f_.max(2)-f_.min(2))<40)&obj
+            cup=cv2.morphologyEx(cup.astype(np.uint8),cv2.MORPH_OPEN,np.ones((7,7),np.uint8))>0
+            if cup.sum()>500: obj=cup
         ys,xs=np.nonzero(obj)
         if len(ys)==0: ramps.append(np.ones_like(raw[i])); continue
         top=np.percentile(ys,2); cx=np.median(xs)
@@ -28,14 +33,17 @@ if ARM:
             bottom=np.percentile(ys,99); x0,x1=np.percentile(xs,[1,99]); w_=x1-x0
             # hands sit around the cup's rim: keep them fully, fade the forearms higher up,
             # and never take the barista's torso above the middle of the cup
-            ramp=np.clip((yy-(top-0.24*H_))/(0.18*H_),0,1)**1.3*(yy<=bottom+0.03*H_)
-            torso=((yy<top+0.02*H_)&(xx>cx-0.3*w_)&(xx<cx+0.3*w_)).astype(np.float32)
+            up,tw=(0.24,0.3) if clip=='rose' else (0.3,0.62)   # honey: cup is held low against the body
+            ramp=np.clip((yy-(top-up*H_))/(0.12*H_),0,1)**1.3*(yy<=bottom+0.03*H_)
+            ty=top+0.02*H_ if clip=='rose' else top-0.1*H_   # honey: keep the foam and rim above the white body
+            torso=((yy<ty)&(xx>cx-tw*w_)&(xx<cx+tw*w_)).astype(np.float32)
             torso=cv2.GaussianBlur(torso,(0,0),0.035*raw.shape[2])
             ramp=ramp*(1-np.clip(torso*1.6,0,1))
         else:
             ramp=np.clip((yy-top)/(0.16*H_),0,1)**1.5*np.clip((cx-xx)/(0.08*raw.shape[2]),0,1)
         ramps.append(ramp)
         arm=np.clip((hum[i]-0.5)/0.3,0,1)*ramp
+        if clip=='honey': raw[i]=raw[i]*np.maximum(ramp,0)  # also clip the object mask to the hands/cup zone
         raw[i]=np.maximum(raw[i],arm)
 n=len(raw); H,W=raw.shape[1:]
 out=f'/tmp/seg/out_{clip}'; os.makedirs(out,exist_ok=True)

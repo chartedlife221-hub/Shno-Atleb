@@ -6,7 +6,7 @@ import type { MenuItem } from '../lib/types.ts';
  * (cut from the same source) can hand over to each other on the same frame.
  */
 export interface Clip {
-  readonly id: 'iced' | 'hot' | 'spanish' | 'frappe' | 'rose';
+  readonly id: 'iced' | 'hot' | 'spanish' | 'frappe' | 'rose' | 'honey';
   /** Native size of the hero file; portrait clips are shown whole (contained) in landscape frames. */
   readonly w: number;
   readonly h: number;
@@ -24,6 +24,7 @@ export const CLIPS: Record<Clip['id'], Clip> = {
   hot: { id: 'hot', w: 638, h: 342, start: 7.4, rest: 7.65, lead: 0.9, cupX: [0.84, 0.74] },
   iced: { id: 'iced', w: 678, h: 360, start: 2.6, rest: 3.0, lead: 0.9, cupX: [0.5, 0.5] },
   spanish: { id: 'spanish', w: 562, h: 1010, start: 2.0, rest: 2.3, lead: 0.9, cupX: [0.45, 0.47] },
+  honey: { id: 'honey', w: 640, h: 360, start: 0, rest: 0.3, lead: 0.9, cupX: [0.58, 0.58] },
   rose: { id: 'rose', w: 648, h: 352, start: 1.8, rest: 2.0, lead: 0.9, cupX: [0.42, 0.41] },
   frappe: { id: 'frappe', w: 540, h: 960, start: 0, rest: 0.3, lead: 0.9, cupX: [0.45, 0.47] },
 };
@@ -34,6 +35,7 @@ export const CLIPS: Record<Clip['id'], Clip> = {
  * - the layered iced Spanish latte glass is only that order;
  * - the whipped-cream caramel glass is only the Caramel Frappuccino;
  * - the pink rose latte in a ceramic cup is only the Rose Latte;
+ * - the cinnamon-dusted latte in a white ceramic cup is only the Honey Cinnamon Latte;
  * - the white lidded takeaway cup is how every hot drink is served, so hot drinks use it.
  * Other iced drinks, frappés, matcha and desserts have no footage yet and return null.
  */
@@ -41,6 +43,7 @@ export function clipFor(item: MenuItem): Clip | null {
   if (item.id === 'iced-vanilla-americano') return CLIPS.iced;
   if (item.id === 'iced-spanish-latte') return CLIPS.spanish;
   if (item.id === 'caramel-frappuccino') return CLIPS.frappe;
+  if (item.id === 'honey-cinnamon-latte') return CLIPS.honey; // cinnamon-dusted latte in a white ceramic cup
   if (item.id === 'rose-latte') return CLIPS.rose; // its own ceramic cup, never the takeaway cup
   const hot = item.category !== 'cake_dessert' && item.moods.includes('warm') && !/iced|frapp/i.test(item.name.en);
   return hot ? CLIPS.hot : null;
@@ -80,6 +83,7 @@ export interface Handoff {
 export const HANDOFFS: Record<Clip['id'], Handoff> = {
   hot: { id: 'hot', w: 638, h: 342, pad: 8, offset: 165 / 23.976, peak: [4.3, 5.75], cupX: [0.84, 0.41], anchor: [0.62, 0.18], top: [0.3, 0.12], cupY: [0.45, 0.45], feather: [0.03, 0.1, 0.1, 0.05] },
   iced: { id: 'iced', w: 678, h: 360, pad: 8, offset: 70 / 23.976, peak: [4.45, 7.2], cupX: [0.5, 0.48], anchor: [0.5, 0.2], top: [0.22, 0.02], cupY: [0.45, 0.45], feather: [0.04, 0.04, 0.05, 0.1] },
+  honey: { id: 'honey', w: 640, h: 360, pad: 8, offset: 0, rate: 1.3, phone: 0.75, peak: [5.4, 7.6], cupX: [0.58, 0.58], anchor: [0.58, 0.15], top: [0.32, 0.5], cupY: [0.5, 0.6], feather: [0.03, 0.03, 0.12, 0.03] },
   rose: { id: 'rose', w: 648, h: 352, pad: 8, offset: 2.0, rate: 1.5, phone: 0.6, peak: [6.0, 7.9], cupX: [0.44, 0.5], anchor: [0.5, 0.55], top: [0.4, 0.38], cupY: [0.5, 0.55], feather: [0.03, 0.03, 0.14, 0.03] },
   frappe: { id: 'frappe', w: 540, h: 960, pad: 8, offset: 0, peak: [4.6, 7.9], cupX: [0.45, 0.55], anchor: [0.5, 0.35], top: [0.24, 0.2], cupY: [0.55, 0.55], feather: [0.2, 0.03, 0.05, 0.03] },
   spanish: { id: 'spanish', w: 610, h: 1058, pad: 8, offset: 50 / 23.976, trim: 24, peak: [2.95, 7.5], cupX: [0.45, 0.5], anchor: [0.5, 0.3], top: [0.32, 0.1], cupY: [0.6, 0.55], feather: [0.08, 0.03, 0.05, 0.04] },

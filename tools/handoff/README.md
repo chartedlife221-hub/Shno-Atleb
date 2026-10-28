@@ -15,4 +15,6 @@ Spanish latte: `human.py` adds the forearm (U²-Net human) so the wrist continue
 
 Rose latte: `masks_rose.py` (ISNet + U²-Net human); both hands kept, forearms fade upward, torso above the cup excluded; played at 1.5×.
 
+Honey cinnamon latte: `masks_honey.py`; the cup is located by colour (the salient model also takes the barista body), forearms fade upward, torso excluded; played at 1.3×.
+
 Frames used: hot 165–300, iced 70–245, Spanish latte 50–235, caramel frappuccino 0–191 at 540×960 (23.976 fps; thin wisps removed, 24 px black border trimmed). Peak times are in `src/ui/clips.ts`.
